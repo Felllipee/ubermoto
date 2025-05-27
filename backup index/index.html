@@ -235,7 +235,29 @@
             }
         }
 
-       
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--netflix-red);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.5);
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(229, 9, 20, 0.7);
+        }
+
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -1579,16 +1601,3 @@
 </body>
 
 </html>
-<!-- Botão para gerar o relatório -->
-<div class="fixed bottom-5 right-5">
-    <button onclick="generateReport()" class="netflix-btn">
-        Gerar Relatório
-    </button>
-</div>
-
-<script>
-    // Função para gerar o relatório (abre a tela de impressão)
-    function generateReport() {
-        window.print();
-    }
-</script>
