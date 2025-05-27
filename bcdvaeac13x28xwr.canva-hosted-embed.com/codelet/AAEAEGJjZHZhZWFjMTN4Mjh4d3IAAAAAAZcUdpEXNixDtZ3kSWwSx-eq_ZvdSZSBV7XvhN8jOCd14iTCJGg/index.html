@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UberTrack - Gerenciamento de Gastos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.0.8/countUp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@2.3.0/build/global/luxon.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;500;700&display=swap');
+        :root {
+            --netflix-red: #E50914;
+            --netflix-black: #141414;
+            --netflix-dark-gray: #181818;
+            --netflix-gray: #2F2F2F;
+            --netflix-light-gray: #808080;
+            --netflix-white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--netflix-black);
+            color: var(--netflix-white);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .title {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .card {
+            background-color: var(--netflix-dark-gray);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+        }
+
+        .netflix-btn {
+            background-color: var(--netflix-red);
+            color: var(--netflix-white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .netflix-btn:hover {
+            background-color: #f40612;
+            transform: translateY(-2px);
+        }
+
+        .netflix-input {
+            background-color: var(--netflix-gray);
+            border: 1px solid var(--netflix-light-gray);
+            color: var(--netflix-white);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .netflix-input:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+        .netflix-select {
+            background-color: var(--netflix-gray);
+            border: 1px solid var(--netflix-light-gray);
+            color: var(--netflix-white);
+            padding: 10px;
+            border-radius: 4px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: calc(100% - 12px) center;
+            padding-right: 30px;
+        }
+
+        .netflix-select:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 10px 20px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid var(--netflix-red);
+            color: var(--netflix-white);
+        }
+
+        .tab:hover:not(.active) {
+            border-bottom: 2px solid rgba(229, 9, 20, 0.5);
+        }
+
+        .number-animation {
+            font-weight: bold;
+            color: var(--netflix-white);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(229, 9, 20, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(229, 9, 20, 0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px;
+            width: 100%;
+        }
+
+        .data-row:nth-child(odd) {
+            background-color: rgba(47, 47, 47, 0.5);
+        }
+
+        .data-row:hover {
+            background-color: rgba(229, 9, 20, 0.1);
+        }
+
+        /* Scrollbar styling */
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--netflix-black);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--netflix-red);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f40612;
+        }
+
+        .loading-bar {
+            height: 4px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--netflix-gray);
+            border-radius: 2px;
+        }
+
+        .loading-bar::before {
+            content: "";
+            display: block;
+            position: absolute;
+            left: -200px;
+            width: 200px;
+            height: 4px;
+            background-color: var(--netflix-red);
+            animation: loading 2s linear infinite;
+        }
+
+        @keyframes loading {
+            from {
+                left: -200px;
+                width: 30%;
+            }
+            50% {
+                width: 30%;
+            }
+            70% {
+                width: 70%;
+            }
+            80% {
+                left: 50%;
+            }
+            95% {
+                left: 120%;
+            }
+            to {
+                left: 100%;
+            }
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--netflix-red);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.5);
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(229, 9, 20, 0.7);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .bounce {
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-10px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-5px);
+            }
+            50% {
+                transform: translateX(5px);
+            }
+            75% {
+                transform: translateX(-5px);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <h1 class="title text-4xl text-netflix-red mr-2">UBERTRACK</h1>
+                <span class="bg-netflix-red px-2 py-1 rounded text-xs">PRO</span>
+            </div>
+            <div class="flex items-center">
+                <div class="mr-4">
+                    <select id="period-selector" class="netflix-select">
+                        <option value="day">Hoje</option>
+                        <option value="week">Esta Semana</option>
+                        <option value="month" selected>Este Mês</option>
+                        <option value="semester">Este Semestre</option>
+                        <option value="year">Este Ano</option>
+                    </select>
+                </div>
+                <button id="add-entry-btn" class="netflix-btn flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Nova Entrada
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Total Revenue Card -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg text-netflix-light-gray">Receita Total</h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="flex items-end">
+                    <span class="text-3xl font-bold" id="total-revenue">R$ 0,00</span>
+                    <span class="ml-2 text-sm text-green-500 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                        </svg>
+                        <span id="revenue-percentage">0%</span>
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <div class="loading-bar"></div>
+                </div>
+            </div>
+
+            <!-- Expenses Card -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg text-netflix-light-gray">Despesas Totais</h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="flex items-end">
+                    <span class="text-3xl font-bold" id="total-expenses">R$ 0,00</span>
+                    <span class="ml-2 text-sm text-red-500 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd" />
+                        </svg>
+                        <span id="expenses-percentage">0%</span>
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <div class="loading-bar"></div>
+                </div>
+            </div>
+
+            <!-- Net Profit Card -->
+            <div class="card p-6 pulse">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg text-netflix-light-gray">Lucro Líquido</h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <div class="flex items-end">
+                    <span class="text-3xl font-bold" id="net-profit">R$ 0,00</span>
+                    <span class="ml-2 text-sm text-blue-500 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                        </svg>
+                        <span id="profit-percentage">0%</span>
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <div class="loading-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Revenue vs Expenses Chart -->
+            <div class="card p-6 fade-in">
+                <h3 class="text-xl mb-4">Receitas vs Despesas</h3>
+                <div class="chart-container">
+                    <canvas id="revenue-expenses-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Expense Breakdown Chart -->
+            <div class="card p-6 fade-in">
+                <h3 class="text-xl mb-4">Detalhamento de Despesas</h3>
+                <div class="chart-container">
+                    <canvas id="expense-breakdown-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-6 border-b border-netflix-gray">
+            <div class="flex overflow-x-auto">
+                <div class="tab active" data-tab="daily">Diário</div>
+                <div class="tab" data-tab="weekly">Semanal</div>
+                <div class="tab" data-tab="monthly">Mensal</div>
+                <div class="tab" data-tab="semester">Semestral</div>
+                <div class="tab" data-tab="yearly">Anual</div>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content slide-in" id="daily-content">
+            <div class="card p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl">Registros Diários</h3>
+                    <button id="add-entry-btn-2" class="netflix-btn flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Adicionar Registro
+                    </button>
+                </div>
+                <div id="daily-table-container" class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left border-b border-netflix-gray">
+                                <th class="pb-2">Data</th>
+                                <th class="pb-2">Corridas</th>
+                                <th class="pb-2">Receita</th>
+                                <th class="pb-2">Combustível</th>
+                                <th class="pb-2">Outros Gastos</th>
+                                <th class="pb-2">Lucro</th>
+                                <th class="pb-2">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="daily-records">
+                            <!-- Daily records will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty state for when there are no records -->
+                <div id="empty-state" class="hidden empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-netflix-light-gray mb-4 bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-xl mb-2">Nenhum registro encontrado</h3>
+                    <p class="text-netflix-light-gray mb-4">Adicione seu primeiro registro para começar a acompanhar seus ganhos e despesas.</p>
+                    <button id="add-first-entry" class="netflix-btn">Adicionar Primeiro Registro</button>
+                </div>
+            </div>
+
+            <!-- Daily Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h4 class="text-lg mb-3 text-netflix-light-gray">Média de Receita Diária</h4>
+                    <p class="text-2xl font-bold" id="avg-daily-revenue">R$ 0,00</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-lg mb-3 text-netflix-light-gray">Média de Despesas Diárias</h4>
+                    <p class="text-2xl font-bold" id="avg-daily-expenses">R$ 0,00</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-lg mb-3 text-netflix-light-gray">Média de Lucro Diário</h4>
+                    <p class="text-2xl font-bold" id="avg-daily-profit">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Content (Hidden by default) -->
+        <div class="tab-content hidden" id="weekly-content">
+            <div class="card p-6">
+                <h3 class="text-xl mb-4">Resumo Semanal</h3>
+                <div class="chart-container">
+                    <canvas id="weekly-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Content (Hidden by default) -->
+        <div class="tab-content hidden" id="monthly-content">
+            <div class="card p-6">
+                <h3 class="text-xl mb-4">Resumo Mensal</h3>
+                <div class="chart-container">
+                    <canvas id="monthly-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Semester Content (Hidden by default) -->
+        <div class="tab-content hidden" id="semester-content">
+            <div class="card p-6">
+                <h3 class="text-xl mb-4">Resumo Semestral</h3>
+                <div class="chart-container">
+                    <canvas id="semester-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yearly Content (Hidden by default) -->
+        <div class="tab-content hidden" id="yearly-content">
+            <div class="card p-6">
+                <h3 class="text-xl mb-4">Resumo Anual</h3>
+                <div class="chart-container">
+                    <canvas id="yearly-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="floating-btn" id="floating-add-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+    </div>
+
+    <!-- Add Entry Modal (Hidden by default) -->
+    <div id="add-entry-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-netflix-dark-gray rounded-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Nova Entrada</h3>
+                <button id="close-modal" class="text-netflix-light-gray hover:text-netflix-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="entry-form">
+                <div class="mb-4">
+                    <label class="block text-netflix-light-gray mb-2">Data</label>
+                    <input type="date" id="entry-date" class="netflix-input w-full" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-netflix-light-gray mb-2">Número de Corridas</label>
+                    <input type="number" id="entry-rides" class="netflix-input w-full" min="0" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-netflix-light-gray mb-2">Receita Total (R$)</label>
+                    <input type="number" id="entry-revenue" class="netflix-input w-full" min="0" step="0.01" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-netflix-light-gray mb-2">Gasto com Combustível (R$)</label>
+                    <input type="number" id="entry-fuel" class="netflix-input w-full" min="0" step="0.01" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-netflix-light-gray mb-2">Outros Gastos (R$)</label>
+                    <input type="number" id="entry-other" class="netflix-input w-full" min="0" step="0.01" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-netflix-light-gray mb-2">Notas (opcional)</label>
+                    <textarea id="entry-notes" class="netflix-input w-full" rows="2"></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="cancel-entry" class="mr-2 px-4 py-2 border border-netflix-light-gray text-netflix-light-gray rounded hover:text-netflix-white">Cancelar</button>
+                    <button type="submit" class="netflix-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample data - with today's date and recent dates
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const twoDaysAgo = new Date(today);
+        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+        const threeDaysAgo = new Date(today);
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+        const fourDaysAgo = new Date(today);
+        fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+        const fiveDaysAgo = new Date(today);
+        fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+        const sixDaysAgo = new Date(today);
+        sixDaysAgo.setDate(sixDaysAgo.getDate() - 6);
+
+        const formatDateForInput = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        // Default sample data
+        const defaultSampleData = {
+            daily: [{
+                    date: formatDateForInput(sixDaysAgo),
+                    rides: 15,
+                    revenue: 350.00,
+                    fuel: 80.00,
+                    other: 25.00
+                },
+                {
+                    date: formatDateForInput(fiveDaysAgo),
+                    rides: 18,
+                    revenue: 420.00,
+                    fuel: 90.00,
+                    other: 15.00
+                },
+                {
+                    date: formatDateForInput(fourDaysAgo),
+                    rides: 12,
+                    revenue: 280.00,
+                    fuel: 70.00,
+                    other: 20.00
+                },
+                {
+                    date: formatDateForInput(threeDaysAgo),
+                    rides: 20,
+                    revenue: 480.00,
+                    fuel: 100.00,
+                    other: 30.00
+                },
+                {
+                    date: formatDateForInput(twoDaysAgo),
+                    rides: 16,
+                    revenue: 380.00,
+                    fuel: 85.00,
+                    other: 25.00
+                },
+                {
+                    date: formatDateForInput(yesterday),
+                    rides: 14,
+                    revenue: 320.00,
+                    fuel: 75.00,
+                    other: 20.00
+                },
+                {
+                    date: formatDateForInput(today),
+                    rides: 19,
+                    revenue: 450.00,
+                    fuel: 95.00,
+                    other: 35.00
+                }
+            ],
+            weekly: [{
+                    week: 'Semana 1',
+                    revenue: 2330.00,
+                    fuel: 595.00,
+                    other: 170.00
+                },
+                {
+                    week: 'Semana 2',
+                    revenue: 2450.00,
+                    fuel: 620.00,
+                    other: 180.00
+                },
+                {
+                    week: 'Semana 3',
+                    revenue: 2580.00,
+                    fuel: 650.00,
+                    other: 190.00
+                },
+                {
+                    week: 'Semana 4',
+                    revenue: 2700.00,
+                    fuel: 680.00,
+                    other: 200.00
+                }
+            ],
+            monthly: [{
+                    month: 'Jan',
+                    revenue: 9800.00,
+                    fuel: 2500.00,
+                    other: 800.00
+                },
+                {
+                    month: 'Fev',
+                    revenue: 10200.00,
+                    fuel: 2600.00,
+                    other: 850.00
+                },
+                {
+                    month: 'Mar',
+                    revenue: 10500.00,
+                    fuel: 2650.00,
+                    other: 870.00
+                },
+                {
+                    month: 'Abr',
+                    revenue: 10800.00,
+                    fuel: 2700.00,
+                    other: 890.00
+                },
+                {
+                    month: 'Mai',
+                    revenue: 11000.00,
+                    fuel: 2750.00,
+                    other: 900.00
+                },
+                {
+                    month: 'Jun',
+                    revenue: 10600.00,
+                    fuel: 2650.00,
+                    other: 880.00
+                }
+            ]
+        };
+
+        // Initialize data
+        let data = JSON.parse(localStorage.getItem('uberTrackData')) || defaultSampleData;
+
+        // Chart instances
+        let revenueExpensesChart = null;
+        let expenseBreakdownChart = null;
+        let weeklyChart = null;
+        let monthlyChart = null;
+        let semesterChart = null;
+        let yearlyChart = null;
+
+        // Format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        // Calculate profit
+        function calculateProfit(revenue, fuel, other) {
+            return revenue - fuel - other;
+        }
+
+        // Check if there are records
+        function checkForRecords() {
+            const emptyState = document.getElementById('empty-state');
+            const tableContainer = document.getElementById('daily-table-container');
+
+            if (data.daily.length === 0) {
+                emptyState.classList.remove('hidden');
+                tableContainer.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+            }
+        }
+
+        // Populate daily records table
+        function populateDailyRecords() {
+            const tableBody = document.getElementById('daily-records');
+            tableBody.innerHTML = '';
+
+            // Check if there are records
+            checkForRecords();
+
+            // Sort by date (newest first)
+            const sortedData = [...data.daily].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sortedData.forEach((day, index) => {
+                const profit = calculateProfit(day.revenue, day.fuel, day.other);
+                const row = document.createElement('tr');
+                row.className = 'data-row';
+
+                row.innerHTML = `
+                    <td class="py-3">${new Date(day.date).toLocaleDateString('pt-BR')}</td>
+                    <td class="py-3">${day.rides}</td>
+                    <td class="py-3">${formatCurrency(day.revenue)}</td>
+                    <td class="py-3">${formatCurrency(day.fuel)}</td>
+                    <td class="py-3">${formatCurrency(day.other)}</td>
+                    <td class="py-3 ${profit >= 0 ? 'text-green-500' : 'text-red-500'}">${formatCurrency(profit)}</td>
+                    <td class="py-3">
+                        <button class="text-netflix-light-gray hover:text-netflix-white mr-2" onclick="editEntry('${day.date}')">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                        </button>
+                        <button class="text-netflix-light-gray hover:text-netflix-red" onclick="deleteEntry('${day.date}')">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Update summary numbers
+        function updateSummaryNumbers() {
+            if (data.daily.length === 0) {
+                document.getElementById('total-revenue').textContent = 'R$ 0,00';
+                document.getElementById('total-expenses').textContent = 'R$ 0,00';
+                document.getElementById('net-profit').textContent = 'R$ 0,00';
+                document.getElementById('avg-daily-revenue').textContent = 'R$ 0,00';
+                document.getElementById('avg-daily-expenses').textContent = 'R$ 0,00';
+                document.getElementById('avg-daily-profit').textContent = 'R$ 0,00';
+                document.getElementById('revenue-percentage').textContent = '0%';
+                document.getElementById('expenses-percentage').textContent = '0%';
+                document.getElementById('profit-percentage').textContent = '0%';
+                return;
+            }
+
+            // Calculate totals
+            const totalRevenue = data.daily.reduce((sum, day) => sum + day.revenue, 0);
+            const totalFuel = data.daily.reduce((sum, day) => sum + day.fuel, 0);
+            const totalOther = data.daily.reduce((sum, day) => sum + day.other, 0);
+            const totalExpenses = totalFuel + totalOther;
+            const netProfit = totalRevenue - totalExpenses;
+
+            // Calculate averages
+            const avgRevenue = totalRevenue / data.daily.length;
+            const avgExpenses = totalExpenses / data.daily.length;
+            const avgProfit = netProfit / data.daily.length;
+
+            // Update the summary numbers
+            document.getElementById('total-revenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('total-expenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('net-profit').textContent = formatCurrency(netProfit);
+            document.getElementById('avg-daily-revenue').textContent = formatCurrency(avgRevenue);
+            document.getElementById('avg-daily-expenses').textContent = formatCurrency(avgExpenses);
+            document.getElementById('avg-daily-profit').textContent = formatCurrency(avgProfit);
+
+            // Update percentages
+            document.getElementById('revenue-percentage').textContent = '12%';
+            document.getElementById('expenses-percentage').textContent = '8%';
+            document.getElementById('profit-percentage').textContent = '15%';
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Destroy existing charts if they exist
+            if (revenueExpensesChart) revenueExpensesChart.destroy();
+            if (expenseBreakdownChart) expenseBreakdownChart.destroy();
+            if (weeklyChart) weeklyChart.destroy();
+            if (monthlyChart) monthlyChart.destroy();
+            if (semesterChart) semesterChart.destroy();
+            if (yearlyChart) yearlyChart.destroy();
+
+            // If there's no data, don't try to create charts
+            if (data.daily.length === 0) return;
+
+            // Revenue vs Expenses Chart
+            const revenueExpensesCtx = document.getElementById('revenue-expenses-chart').getContext('2d');
+
+            // Sort data by date for the chart
+            const sortedData = [...data.daily].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            revenueExpensesChart = new Chart(revenueExpensesCtx, {
+                type: 'line',
+                data: {
+                    labels: sortedData.map(day => new Date(day.date).toLocaleDateString('pt-BR')),
+                    datasets: [{
+                            label: 'Receita',
+                            data: sortedData.map(day => day.revenue),
+                            borderColor: '#E50914',
+                            backgroundColor: 'rgba(229, 9, 20, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#E50914',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Despesas',
+                            data: sortedData.map(day => day.fuel + day.other),
+                            borderColor: '#808080',
+                            backgroundColor: 'rgba(128, 128, 128, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#808080',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080',
+                                callback: function(value) {
+                                    return 'R$ ' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF',
+                            borderColor: '#E50914',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Expense Breakdown Chart
+            const expenseBreakdownCtx = document.getElementById('expense-breakdown-chart').getContext('2d');
+
+            // Calculate totals for pie chart
+            const totalFuel = data.daily.reduce((sum, day) => sum + day.fuel, 0);
+            const totalOther = data.daily.reduce((sum, day) => sum + day.other, 0);
+
+            expenseBreakdownChart = new Chart(expenseBreakdownCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Combustível', 'Outros Gastos'],
+                    datasets: [{
+                        data: [totalFuel, totalOther],
+                        backgroundColor: ['#E50914', '#808080'],
+                        borderColor: '#141414',
+                        borderWidth: 2,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#FFFFFF',
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF',
+                            borderColor: '#E50914',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return context.label + ': ' + formatCurrency(value) + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Weekly Chart
+            const weeklyCtx = document.getElementById('weekly-chart').getContext('2d');
+            weeklyChart = new Chart(weeklyCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.weekly.map(week => week.week),
+                    datasets: [{
+                            label: 'Receita',
+                            data: data.weekly.map(week => week.revenue),
+                            backgroundColor: '#E50914',
+                            borderColor: '#E50914',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Combustível',
+                            data: data.weekly.map(week => week.fuel),
+                            backgroundColor: '#808080',
+                            borderColor: '#808080',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Outros Gastos',
+                            data: data.weekly.map(week => week.other),
+                            backgroundColor: '#2F2F2F',
+                            borderColor: '#2F2F2F',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080',
+                                callback: function(value) {
+                                    return 'R$ ' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF',
+                            borderColor: '#E50914',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Monthly Chart
+            const monthlyCtx = document.getElementById('monthly-chart').getContext('2d');
+            monthlyChart = new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.monthly.map(month => month.month),
+                    datasets: [{
+                            label: 'Receita',
+                            data: data.monthly.map(month => month.revenue),
+                            backgroundColor: '#E50914',
+                            borderColor: '#E50914',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Combustível',
+                            data: data.monthly.map(month => month.fuel),
+                            backgroundColor: '#808080',
+                            borderColor: '#808080',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Outros Gastos',
+                            data: data.monthly.map(month => month.other),
+                            backgroundColor: '#2F2F2F',
+                            borderColor: '#2F2F2F',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080',
+                                callback: function(value) {
+                                    return 'R$ ' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF',
+                            borderColor: '#E50914',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Create semester chart based on monthly data
+            const semesterCtx = document.getElementById('semester-chart').getContext('2d');
+            semesterChart = new Chart(semesterCtx, {
+                type: 'line',
+                data: {
+                    labels: data.monthly.map(month => month.month),
+                    datasets: [{
+                            label: 'Receita',
+                            data: data.monthly.map(month => month.revenue),
+                            borderColor: '#E50914',
+                            backgroundColor: 'rgba(229, 9, 20, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#E50914',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Despesas Totais',
+                            data: data.monthly.map(month => month.fuel + month.other),
+                            borderColor: '#808080',
+                            backgroundColor: 'rgba(128, 128, 128, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#808080',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Lucro',
+                            data: data.monthly.map(month => month.revenue - month.fuel - month.other),
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#4CAF50',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080',
+                                callback: function(value) {
+                                    return 'R$ ' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF',
+                            borderColor: '#E50914',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Create yearly chart (simplified version based on monthly data)
+            const yearlyCtx = document.getElementById('yearly-chart').getContext('2d');
+
+            // Calculate yearly totals
+            const yearlyRevenue = data.monthly.reduce((sum, month) => sum + month.revenue, 0);
+            const yearlyFuel = data.monthly.reduce((sum, month) => sum + month.fuel, 0);
+            const yearlyOther = data.monthly.reduce((sum, month) => sum + month.other, 0);
+            const yearlyProfit = yearlyRevenue - yearlyFuel - yearlyOther;
+
+            yearlyChart = new Chart(yearlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Resumo Anual'],
+                    datasets: [{
+                            label: 'Receita Total',
+                            data: [yearlyRevenue],
+                            backgroundColor: '#E50914',
+                            borderColor: '#E50914',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Combustível Total',
+                            data: [yearlyFuel],
+                            backgroundColor: '#808080',
+                            borderColor: '#808080',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Outros Gastos Total',
+                            data: [yearlyOther],
+                            backgroundColor: '#2F2F2F',
+                            borderColor: '#2F2F2F',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Lucro Total',
+                            data: [yearlyProfit],
+                            backgroundColor: '#4CAF50',
+                            borderColor: '#4CAF50',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080',
+                                callback: function(value) {
+                                    return 'R$ ' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#808080'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF',
+                            borderColor: '#E50914',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Tab switching functionality
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+
+                    // Hide all tab contents
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                        content.classList.remove('slide-in');
+                    });
+
+                    // Show the selected tab content
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-content`).classList.remove('hidden');
+                    document.getElementById(`${tabId}-content`).classList.add('slide-in');
+                });
+            });
+        }
+
+        // Modal functionality
+        function setupModal() {
+            const modal = document.getElementById('add-entry-modal');
+            const openModalBtn = document.getElementById('add-entry-btn');
+            const openModalBtn2 = document.getElementById('add-entry-btn-2');
+            const floatingAddBtn = document.getElementById('floating-add-btn');
+            const addFirstEntryBtn = document.getElementById('add-first-entry');
+            const closeModalBtn = document.getElementById('close-modal');
+            const cancelBtn = document.getElementById('cancel-entry');
+            const entryForm = document.getElementById('entry-form');
+
+            // Set default date to today
+            document.getElementById('entry-date').valueAsDate = new Date();
+
+            // Open modal
+            function openModal() {
+                modal.classList.remove('hidden');
+                document.getElementById('entry-form').reset();
+                document.getElementById('entry-date').valueAsDate = new Date();
+            }
+
+            openModalBtn.addEventListener('click', openModal);
+            openModalBtn2.addEventListener('click', openModal);
+            floatingAddBtn.addEventListener('click', openModal);
+            if (addFirstEntryBtn) {
+                addFirstEntryBtn.addEventListener('click', openModal);
+            }
+
+            // Close modal
+            function closeModal() {
+                modal.classList.add('hidden');
+                entryForm.reset();
+                document.getElementById('entry-date').valueAsDate = new Date();
+                currentEditingDate = null;
+            }
+
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+
+            // Submit form
+            entryForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const newEntry = {
+                    date: document.getElementById('entry-date').value,
+                    rides: parseInt(document.getElementById('entry-rides').value),
+                    revenue: parseFloat(document.getElementById('entry-revenue').value),
+                    fuel: parseFloat(document.getElementById('entry-fuel').value),
+                    other: parseFloat(document.getElementById('entry-other').value),
+                    notes: document.getElementById('entry-notes').value
+                };
+
+                // If editing, remove the old entry
+                if (currentEditingDate) {
+                    data.daily = data.daily.filter(day => day.date !== currentEditingDate);
+                    currentEditingDate = null;
+                }
+
+                // Check if entry for this date already exists
+                const existingEntryIndex = data.daily.findIndex(day => day.date === newEntry.date);
+                if (existingEntryIndex !== -1) {
+                    // Replace existing entry
+                    data.daily[existingEntryIndex] = newEntry;
+                } else {
+                    // Add new entry
+                    data.daily.push(newEntry);
+                }
+
+                // Save to localStorage
+                localStorage.setItem('uberTrackData', JSON.stringify(data));
+
+                // Update UI
+                refreshUI();
+
+                // Close modal
+                closeModal();
+
+                // Show success message
+                showNotification('Registro salvo com sucesso!', 'success');
+            });
+        }
+
+        // Variable to track which entry is being edited
+        let currentEditingDate = null;
+
+        // Edit entry function
+        window.editEntry = function(date) {
+            const entry = data.daily.find(day => day.date === date);
+            if (!entry) return;
+
+            currentEditingDate = date;
+
+            const modal = document.getElementById('add-entry-modal');
+
+            // Fill form with entry data
+            document.getElementById('entry-date').value = entry.date;
+            document.getElementById('entry-rides').value = entry.rides;
+            document.getElementById('entry-revenue').value = entry.revenue;
+            document.getElementById('entry-fuel').value = entry.fuel;
+            document.getElementById('entry-other').value = entry.other;
+            document.getElementById('entry-notes').value = entry.notes || '';
+
+            // Show modal
+            modal.classList.remove('hidden');
+        };
+
+        // Delete entry function
+        window.deleteEntry = function(date) {
+            if (confirm('Tem certeza que deseja excluir este registro?')) {
+                data.daily = data.daily.filter(day => day.date !== date);
+
+                // Save to localStorage
+                localStorage.setItem('uberTrackData', JSON.stringify(data));
+
+                // Update UI
+                refreshUI();
+
+                // Show success message
+                showNotification('Registro excluído com sucesso!', 'success');
+            }
+        };
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                'bg-blue-600'
+            } text-white`;
+
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        ${type === 'success' ? 
+                            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />' :
+                            type === 'error' ? 
+                            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />' :
+                            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'
+                        }
+                    </svg>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            // Add to body
+            document.body.appendChild(notification);
+
+            // Add entrance animation
+            notification.style.animation = 'slideIn 0.3s ease-out';
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease-in';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Refresh all UI elements
+        function refreshUI() {
+            populateDailyRecords();
+            updateSummaryNumbers();
+            initCharts();
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Make sure we have data
+            if (!localStorage.getItem('uberTrackData')) {
+                localStorage.setItem('uberTrackData', JSON.stringify(defaultSampleData));
+                data = defaultSampleData;
+            }
+
+            refreshUI();
+            setupTabs();
+            setupModal();
+
+            // Add CSS for notification animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+    <script>
+        (function() {
+            function c() {
+                var b = a.contentDocument || a.contentWindow.document;
+                if (b) {
+                    var d = b.createElement('script');
+                    d.innerHTML = "window.__CF$cv$params={r:'9461ab36b409f19f',t:'MTc0ODMwODYwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+                    b.getElementsByTagName('head')[0].appendChild(d)
+                }
+            }
+            if (document.body) {
+                var a = document.createElement('iframe');
+                a.height = 1;
+                a.width = 1;
+                a.style.position = 'absolute';
+                a.style.top = 0;
+                a.style.left = 0;
+                a.style.border = 'none';
+                a.style.visibility = 'hidden';
+                document.body.appendChild(a);
+                if ('loading' !== document.readyState) c();
+                else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c);
+                else {
+                    var e = document.onreadystatechange || function() {};
+                    document.onreadystatechange = function(b) {
+                        e(b);
+                        'loading' !== document.readyState && (document.onreadystatechange = e, c())
+                    }
+                }
+            }
+        })();
+    </script>
+</body>
+
+</html>
