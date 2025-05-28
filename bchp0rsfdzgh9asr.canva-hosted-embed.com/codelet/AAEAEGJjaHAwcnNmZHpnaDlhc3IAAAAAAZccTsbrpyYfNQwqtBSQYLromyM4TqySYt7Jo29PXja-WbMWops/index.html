@@ -140,6 +140,15 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--netflix-red);
         }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -181,46 +190,34 @@
         <!-- Resumo -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="card p-6">
-                <h3 class="text-gray-400 mb-1">Receita Total</h3>
-                <div class="text-2xl font-bold" id="totalIncome">R$ 3.250,00</div>
-                <div class="text-green-500 text-sm mt-2 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                    </svg>
-                    <span>12% vs. período anterior</span>
+                <h3 class="text-gray-400 mb-1">Ganhos Total</h3>
+                <div class="text-2xl font-bold" id="totalIncome">R$ 0,00</div>
+                <div class="text-green-500 text-sm mt-2 flex items-center" id="incomeComparison">
+                    <span>Sem dados anteriores</span>
                 </div>
             </div>
 
             <div class="card p-6">
                 <h3 class="text-gray-400 mb-1">Despesas</h3>
-                <div class="text-2xl font-bold" id="totalExpenses">R$ 1.850,00</div>
-                <div class="text-red-500 text-sm mt-2 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                    </svg>
-                    <span>8% vs. período anterior</span>
+                <div class="text-2xl font-bold" id="totalExpenses">R$ 0,00</div>
+                <div class="text-red-500 text-sm mt-2 flex items-center" id="expensesComparison">
+                    <span>Sem dados anteriores</span>
                 </div>
             </div>
 
             <div class="card p-6">
                 <h3 class="text-gray-400 mb-1">Lucro Líquido</h3>
-                <div class="text-2xl font-bold" id="netProfit">R$ 1.400,00</div>
-                <div class="text-green-500 text-sm mt-2 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                    </svg>
-                    <span>15% vs. período anterior</span>
+                <div class="text-2xl font-bold" id="netProfit">R$ 0,00</div>
+                <div class="text-green-500 text-sm mt-2 flex items-center" id="profitComparison">
+                    <span>Sem dados anteriores</span>
                 </div>
             </div>
 
             <div class="card p-6">
                 <h3 class="text-gray-400 mb-1">Corridas</h3>
-                <div class="text-2xl font-bold" id="totalRides">142</div>
-                <div class="text-green-500 text-sm mt-2 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                    </svg>
-                    <span>5% vs. período anterior</span>
+                <div class="text-2xl font-bold" id="totalRides">0</div>
+                <div class="text-green-500 text-sm mt-2 flex items-center" id="ridesComparison">
+                    <span>Sem dados anteriores</span>
                 </div>
             </div>
         </div>
@@ -228,16 +225,31 @@
         <!-- Gráficos -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div class="card p-6">
-                <h3 class="text-lg font-semibold mb-4">Receitas vs Despesas</h3>
-                <div class="h-64">
+                <h3 class="text-lg font-semibold mb-4">Ganhos vs Despesas</h3>
+                <div class="h-64" id="incomeExpensesChartContainer">
                     <canvas id="incomeExpensesChart"></canvas>
+                    <div class="empty-state hidden" id="incomeExpensesEmptyState">
+                        <svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="text-gray-400">Sem dados para exibir</p>
+                        <p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar o gráfico</p>
+                    </div>
                 </div>
             </div>
 
             <div class="card p-6">
                 <h3 class="text-lg font-semibold mb-4">Categorias de Despesas</h3>
-                <div class="h-64">
+                <div class="h-64" id="expenseCategoriesChartContainer">
                     <canvas id="expenseCategoriesChart"></canvas>
+                    <div class="empty-state hidden" id="expenseCategoriesEmptyState">
+                        <svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                        </svg>
+                        <p class="text-gray-400">Sem despesas para exibir</p>
+                        <p class="text-gray-500 text-sm mt-2">Adicione despesas para visualizar o gráfico</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -245,15 +257,29 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div class="card p-6">
                 <h3 class="text-lg font-semibold mb-4">Desempenho por Dia da Semana</h3>
-                <div class="h-64">
+                <div class="h-64" id="weekdayPerformanceChartContainer">
                     <canvas id="weekdayPerformanceChart"></canvas>
+                    <div class="empty-state hidden" id="weekdayPerformanceEmptyState">
+                        <svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-gray-400">Sem dados para exibir</p>
+                        <p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar o desempenho</p>
+                    </div>
                 </div>
             </div>
 
             <div class="card p-6">
                 <h3 class="text-lg font-semibold mb-4">Lucro Líquido (Tendência)</h3>
-                <div class="h-64">
+                <div class="h-64" id="profitTrendChartContainer">
                     <canvas id="profitTrendChart"></canvas>
+                    <div class="empty-state hidden" id="profitTrendEmptyState">
+                        <svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                        <p class="text-gray-400">Sem dados para exibir</p>
+                        <p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar a tendência</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -286,6 +312,13 @@
                         <!-- Dados serão inseridos via JavaScript -->
                     </tbody>
                 </table>
+                <div id="emptyTransactionsMessage" class="py-8 text-center hidden">
+                    <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <p class="text-gray-400">Nenhuma transação encontrada</p>
+                    <p class="text-gray-500 text-sm mt-2">Clique em "Novo Lançamento" para adicionar sua primeira transação</p>
+                </div>
             </div>
             <div class="mt-4 flex justify-between items-center">
                 <div class="text-sm text-gray-400" id="paginationInfo">Mostrando 0 de 0 transações</div>
@@ -336,7 +369,7 @@
                 <div class="mb-4">
                     <label class="block text-gray-400 mb-2" for="transactionCategory">Categoria</label>
                     <select id="transactionCategory" class="w-full p-2 rounded">
-                        <option value="receita">Receita</option>
+                        <option value="ganhos">Ganhos</option>
                         <option value="combustivel">Combustível</option>
                         <option value="manutencao">Manutenção</option>
                         <option value="lavagem">Lavagem</option>
@@ -394,346 +427,11 @@
     </div>
 
     <script>
-        // Dados de exemplo
-        let sampleData = {
-            day: {
-                income: 320,
-                expenses: 200,
-                profit: 120,
-                rides: 12,
-                incomeExpensesData: {
-                    labels: ['Hoje'],
-                    income: [320],
-                    expenses: [200]
-                },
-                expenseCategoriesData: {
-                    labels: ['Combustível', 'Alimentação', 'Outros'],
-                    data: [150, 30, 20]
-                },
-                weekdayPerformanceData: {
-                    labels: ['Hoje'],
-                    data: [120]
-                },
-                profitTrendData: {
-                    labels: ['8h', '10h', '12h', '14h', '16h', '18h', 'Agora'],
-                    data: [20, 35, 45, 60, 80, 95, 120]
-                }
-            },
-            week: {
-                income: 1850,
-                expenses: 950,
-                profit: 900,
-                rides: 65,
-                incomeExpensesData: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-                    income: [280, 290, 320, 310, 350, 180, 120],
-                    expenses: [150, 120, 200, 130, 180, 100, 70]
-                },
-                expenseCategoriesData: {
-                    labels: ['Combustível', 'Manutenção', 'Alimentação', 'Lavagem', 'Outros'],
-                    data: [500, 150, 180, 60, 60]
-                },
-                weekdayPerformanceData: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-                    data: [130, 170, 120, 180, 170, 80, 50]
-                },
-                profitTrendData: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-                    data: [130, 170, 120, 180, 170, 80, 50]
-                }
-            },
-            month: {
-                income: 3250,
-                expenses: 1850,
-                profit: 1400,
-                rides: 142,
-                incomeExpensesData: {
-                    labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
-                    income: [750, 820, 880, 800],
-                    expenses: [450, 480, 520, 400]
-                },
-                expenseCategoriesData: {
-                    labels: ['Combustível', 'Manutenção', 'Alimentação', 'Lavagem', 'Taxas', 'Outros'],
-                    data: [900, 350, 250, 120, 150, 80]
-                },
-                weekdayPerformanceData: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-                    data: [180, 220, 200, 240, 260, 160, 140]
-                },
-                profitTrendData: {
-                    labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
-                    data: [300, 340, 360, 400]
-                }
-            },
-            semester: {
-                income: 18500,
-                expenses: 9800,
-                profit: 8700,
-                rides: 820,
-                incomeExpensesData: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                    income: [2800, 3100, 3200, 3000, 3150, 3250],
-                    expenses: [1500, 1650, 1700, 1600, 1500, 1850]
-                },
-                expenseCategoriesData: {
-                    labels: ['Combustível', 'Manutenção', 'Alimentação', 'Lavagem', 'Taxas', 'Outros'],
-                    data: [4800, 1800, 1200, 600, 800, 600]
-                },
-                weekdayPerformanceData: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-                    data: [1300, 1400, 1350, 1450, 1500, 1000, 700]
-                },
-                profitTrendData: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                    data: [1300, 1450, 1500, 1400, 1650, 1400]
-                }
-            },
-            year: {
-                income: 38200,
-                expenses: 19500,
-                profit: 18700,
-                rides: 1680,
-                incomeExpensesData: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                    income: [2800, 3100, 3200, 3000, 3150, 3250, 3300, 3400, 3200, 3300, 3250, 3250],
-                    expenses: [1500, 1650, 1700, 1600, 1500, 1850, 1700, 1600, 1650, 1700, 1550, 1500]
-                },
-                expenseCategoriesData: {
-                    labels: ['Combustível', 'Manutenção', 'Alimentação', 'Lavagem', 'Taxas', 'Outros'],
-                    data: [9500, 3800, 2400, 1200, 1600, 1000]
-                },
-                weekdayPerformanceData: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-                    data: [2800, 2900, 2750, 3000, 3100, 2200, 1950]
-                },
-                profitTrendData: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                    data: [1300, 1450, 1500, 1400, 1650, 1400, 1600, 1800, 1550, 1600, 1700, 1750]
-                }
-            }
-        };
-
         // Variáveis globais
         let currentPeriod = 'month';
         let charts = {};
         let currentTransactionId = null;
-        let transactions = [{
-                id: 1,
-                date: '2023-06-15',
-                description: 'Uber - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 320,
-                rides: 12
-            },
-            {
-                id: 2,
-                date: '2023-06-14',
-                description: '99 - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 280,
-                rides: 10
-            },
-            {
-                id: 3,
-                date: '2023-06-14',
-                description: 'Combustível',
-                category: 'Combustível',
-                type: 'expense',
-                amount: 200,
-                rides: 0
-            },
-            {
-                id: 4,
-                date: '2023-06-13',
-                description: 'Manutenção - Troca de óleo',
-                category: 'Manutenção',
-                type: 'expense',
-                amount: 150,
-                rides: 0
-            },
-            {
-                id: 5,
-                date: '2023-06-12',
-                description: 'Uber - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 290,
-                rides: 11
-            },
-            {
-                id: 6,
-                date: '2023-06-11',
-                description: 'Lavagem do carro',
-                category: 'Lavagem',
-                type: 'expense',
-                amount: 50,
-                rides: 0
-            },
-            {
-                id: 7,
-                date: '2023-06-10',
-                description: '99 - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 310,
-                rides: 13
-            },
-            {
-                id: 8,
-                date: '2023-06-09',
-                description: 'Combustível',
-                category: 'Combustível',
-                type: 'expense',
-                amount: 180,
-                rides: 0
-            },
-            {
-                id: 9,
-                date: '2023-06-08',
-                description: 'Uber - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 270,
-                rides: 9
-            },
-            {
-                id: 10,
-                date: '2023-06-07',
-                description: 'Alimentação',
-                category: 'Alimentação',
-                type: 'expense',
-                amount: 45,
-                rides: 0
-            },
-            {
-                id: 11,
-                date: '2023-06-06',
-                description: 'Uber - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 300,
-                rides: 12
-            },
-            {
-                id: 12,
-                date: '2023-06-05',
-                description: 'Combustível',
-                category: 'Combustível',
-                type: 'expense',
-                amount: 190,
-                rides: 0
-            },
-            {
-                id: 13,
-                date: '2023-06-04',
-                description: '99 - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 260,
-                rides: 10
-            },
-            {
-                id: 14,
-                date: '2023-06-03',
-                description: 'Manutenção - Filtro de ar',
-                category: 'Manutenção',
-                type: 'expense',
-                amount: 80,
-                rides: 0
-            },
-            {
-                id: 15,
-                date: '2023-06-02',
-                description: 'Uber - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 330,
-                rides: 14
-            },
-            {
-                id: 16,
-                date: '2023-06-01',
-                description: 'Combustível',
-                category: 'Combustível',
-                type: 'expense',
-                amount: 210,
-                rides: 0
-            },
-            {
-                id: 17,
-                date: '2023-05-31',
-                description: '99 - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 290,
-                rides: 11
-            },
-            {
-                id: 18,
-                date: '2023-05-30',
-                description: 'Alimentação',
-                category: 'Alimentação',
-                type: 'expense',
-                amount: 35,
-                rides: 0
-            },
-            {
-                id: 19,
-                date: '2023-05-29',
-                description: 'Uber - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 310,
-                rides: 13
-            },
-            {
-                id: 20,
-                date: '2023-05-28',
-                description: 'Combustível',
-                category: 'Combustível',
-                type: 'expense',
-                amount: 195,
-                rides: 0
-            },
-            {
-                id: 21,
-                date: '2023-05-27',
-                description: '99 - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 280,
-                rides: 10
-            },
-            {
-                id: 22,
-                date: '2023-05-26',
-                description: 'Lavagem do carro',
-                category: 'Lavagem',
-                type: 'expense',
-                amount: 50,
-                rides: 0
-            },
-            {
-                id: 23,
-                date: '2023-05-25',
-                description: 'Uber - Corridas',
-                category: 'Receita',
-                type: 'income',
-                amount: 300,
-                rides: 12
-            },
-            {
-                id: 24,
-                date: '2023-05-24',
-                description: 'Combustível',
-                category: 'Combustível',
-                type: 'expense',
-                amount: 205,
-                rides: 0
-            }
-        ];
+        let transactions = [];
 
         // Variáveis de paginação e busca
         let currentPage = 1;
@@ -743,6 +441,7 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
+            loadTransactionsFromLocalStorage();
             initCharts();
             updateDashboard(currentPeriod);
             setupEventListeners();
@@ -760,16 +459,29 @@
             document.getElementById('transactionCategory').addEventListener('change', previewDashboardUpdate);
         });
 
+        // Carregar transações do localStorage
+        function loadTransactionsFromLocalStorage() {
+            const savedTransactions = localStorage.getItem('driverFinanceTransactions');
+            if (savedTransactions) {
+                transactions = JSON.parse(savedTransactions);
+            }
+        }
+
+        // Salvar transações no localStorage
+        function saveTransactionsToLocalStorage() {
+            localStorage.setItem('driverFinanceTransactions', JSON.stringify(transactions));
+        }
+
         // Inicializar gráficos
         function initCharts() {
-            // Gráfico de Receitas vs Despesas
+            // Gráfico de Ganhos vs Despesas
             charts.incomeExpenses = new Chart(
                 document.getElementById('incomeExpensesChart'), {
                     type: 'bar',
                     data: {
                         labels: [],
                         datasets: [{
-                                label: 'Receitas',
+                                label: 'Ganhos',
                                 backgroundColor: 'rgba(16, 185, 129, 0.8)',
                                 borderColor: 'rgb(16, 185, 129)',
                                 borderWidth: 1,
@@ -810,7 +522,8 @@
                                 },
                                 grid: {
                                     color: 'rgba(255, 255, 255, 0.1)'
-                                }
+                                },
+                                beginAtZero: true
                             }
                         }
                     }
@@ -864,13 +577,13 @@
                 document.getElementById('weekdayPerformanceChart'), {
                     type: 'bar',
                     data: {
-                        labels: [],
+                        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
                         datasets: [{
                             label: 'Lucro Líquido',
                             backgroundColor: 'rgba(99, 102, 241, 0.8)',
                             borderColor: 'rgb(99, 102, 241)',
                             borderWidth: 1,
-                            data: []
+                            data: [0, 0, 0, 0, 0, 0, 0]
                         }]
                     },
                     options: {
@@ -899,7 +612,8 @@
                                 },
                                 grid: {
                                     color: 'rgba(255, 255, 255, 0.1)'
-                                }
+                                },
+                                beginAtZero: true
                             }
                         }
                     }
@@ -952,7 +666,8 @@
                                 },
                                 grid: {
                                     color: 'rgba(255, 255, 255, 0.1)'
-                                }
+                                },
+                                beginAtZero: true
                             }
                         }
                     }
@@ -1062,7 +777,7 @@
 
         // Atualizar dashboard com base no período selecionado
         function updateDashboard(period) {
-            const data = sampleData[period];
+            const data = calculateDashboardData(period);
 
             // Atualizar resumo
             document.getElementById('totalIncome').textContent = formatCurrency(data.income);
@@ -1070,14 +785,380 @@
             document.getElementById('netProfit').textContent = formatCurrency(data.profit);
             document.getElementById('totalRides').textContent = data.rides;
 
+            // Atualizar comparações
+            updateComparisons(data);
+
             // Atualizar gráficos
             updateIncomeExpensesChart(data.incomeExpensesData);
             updateExpenseCategoriesChart(data.expenseCategoriesData);
             updateWeekdayPerformanceChart(data.weekdayPerformanceData);
             updateProfitTrendChart(data.profitTrendData);
+
+            // Mostrar/ocultar estados vazios
+            toggleEmptyStates(data);
         }
 
-        // Atualizar gráfico de Receitas vs Despesas
+        // Calcular dados do dashboard com base nas transações
+        function calculateDashboardData(period) {
+            const now = new Date();
+            let startDate;
+
+            // Determinar a data de início com base no período
+            switch (period) {
+                case 'day':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    break;
+                case 'week':
+                    const dayOfWeek = now.getDay() || 7; // Converter 0 (domingo) para 7
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1);
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'semester':
+                    const semesterStart = now.getMonth() < 6 ? 0 : 6;
+                    startDate = new Date(now.getFullYear(), semesterStart, 1);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+            }
+
+            // Filtrar transações do período
+            const periodTransactions = transactions.filter(t => {
+                const transactionDate = new Date(t.date);
+                return transactionDate >= startDate && transactionDate <= now;
+            });
+
+            // Calcular totais
+            let income = 0;
+            let expenses = 0;
+            let rides = 0;
+
+            // Dados para gráficos
+            let incomeExpensesData = initIncomeExpensesData(period, startDate);
+            let expenseCategoriesData = {
+                labels: [],
+                data: []
+            };
+            let weekdayPerformanceData = {
+                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                data: [0, 0, 0, 0, 0, 0, 0]
+            };
+            let profitTrendData = initProfitTrendData(period, startDate);
+
+            // Processar transações
+            periodTransactions.forEach(transaction => {
+                const transactionDate = new Date(transaction.date);
+
+                if (transaction.type === 'income') {
+                    income += transaction.amount;
+                    rides += transaction.rides || 0;
+
+                    // Atualizar gráfico de ganhos vs despesas
+                    updateIncomeExpensesDataPoint(incomeExpensesData, transactionDate, transaction.amount, 0);
+
+                    // Atualizar gráfico de lucro por dia da semana
+                    const dayOfWeek = transactionDate.getDay() || 7; // Converter 0 (domingo) para 7
+                    weekdayPerformanceData.data[dayOfWeek - 1] += transaction.amount;
+
+                    // Atualizar gráfico de tendência de lucro
+                    updateProfitTrendDataPoint(profitTrendData, transactionDate, transaction.amount);
+                } else {
+                    expenses += transaction.amount;
+
+                    // Atualizar gráfico de ganhos vs despesas
+                    updateIncomeExpensesDataPoint(incomeExpensesData, transactionDate, 0, transaction.amount);
+
+                    // Atualizar gráfico de categorias de despesas
+                    const categoryIndex = expenseCategoriesData.labels.indexOf(transaction.category);
+                    if (categoryIndex !== -1) {
+                        expenseCategoriesData.data[categoryIndex] += transaction.amount;
+                    } else {
+                        expenseCategoriesData.labels.push(transaction.category);
+                        expenseCategoriesData.data.push(transaction.amount);
+                    }
+
+                    // Atualizar gráfico de lucro por dia da semana
+                    const dayOfWeek = transactionDate.getDay() || 7; // Converter 0 (domingo) para 7
+                    weekdayPerformanceData.data[dayOfWeek - 1] -= transaction.amount;
+
+                    // Atualizar gráfico de tendência de lucro
+                    updateProfitTrendDataPoint(profitTrendData, transactionDate, -transaction.amount);
+                }
+            });
+
+            // Calcular lucro
+            const profit = income - expenses;
+
+            return {
+                income,
+                expenses,
+                profit,
+                rides,
+                incomeExpensesData,
+                expenseCategoriesData,
+                weekdayPerformanceData,
+                profitTrendData,
+                hasData: periodTransactions.length > 0,
+                hasExpenses: expenses > 0
+            };
+        }
+
+        // Inicializar dados para o gráfico de ganhos vs despesas
+        function initIncomeExpensesData(period, startDate) {
+            const now = new Date();
+            let labels = [];
+            let income = [];
+            let expenses = [];
+
+            switch (period) {
+                case 'day':
+                    // Horas do dia
+                    for (let i = 0; i < 24; i += 3) {
+                        labels.push(`${i}h`);
+                        income.push(0);
+                        expenses.push(0);
+                    }
+                    break;
+                case 'week':
+                    // Dias da semana
+                    const weekdays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+                    labels = [...weekdays];
+                    income = Array(7).fill(0);
+                    expenses = Array(7).fill(0);
+                    break;
+                case 'month':
+                    // Semanas do mês
+                    labels = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4', 'Semana 5'];
+                    income = Array(5).fill(0);
+                    expenses = Array(5).fill(0);
+                    break;
+                case 'semester':
+                    // Meses do semestre
+                    const semesterStart = startDate.getMonth();
+                    for (let i = 0; i < 6; i++) {
+                        const monthIndex = (semesterStart + i) % 12;
+                        labels.push(getMonthName(monthIndex));
+                        income.push(0);
+                        expenses.push(0);
+                    }
+                    break;
+                case 'year':
+                    // Meses do ano
+                    for (let i = 0; i < 12; i++) {
+                        labels.push(getMonthName(i));
+                        income.push(0);
+                        expenses.push(0);
+                    }
+                    break;
+            }
+
+            return {
+                labels,
+                income,
+                expenses
+            };
+        }
+
+        // Inicializar dados para o gráfico de tendência de lucro
+        function initProfitTrendData(period, startDate) {
+            const now = new Date();
+            let labels = [];
+            let data = [];
+
+            switch (period) {
+                case 'day':
+                    // Horas do dia
+                    for (let i = 0; i < 24; i += 2) {
+                        labels.push(`${i}h`);
+                        data.push(0);
+                    }
+                    break;
+                case 'week':
+                    // Dias da semana
+                    const weekdays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+                    labels = [...weekdays];
+                    data = Array(7).fill(0);
+                    break;
+                case 'month':
+                    // Dias do mês (agrupados por 5)
+                    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                    for (let i = 1; i <= daysInMonth; i += 5) {
+                        labels.push(`Dia ${i}`);
+                        data.push(0);
+                    }
+                    break;
+                case 'semester':
+                    // Meses do semestre
+                    const semesterStart = startDate.getMonth();
+                    for (let i = 0; i < 6; i++) {
+                        const monthIndex = (semesterStart + i) % 12;
+                        labels.push(getMonthName(monthIndex));
+                        data.push(0);
+                    }
+                    break;
+                case 'year':
+                    // Meses do ano
+                    for (let i = 0; i < 12; i++) {
+                        labels.push(getMonthName(i));
+                        data.push(0);
+                    }
+                    break;
+            }
+
+            return {
+                labels,
+                data
+            };
+        }
+
+        // Atualizar ponto de dados no gráfico de ganhos vs despesas
+        function updateIncomeExpensesDataPoint(data, date, incomeAmount, expenseAmount) {
+            const now = new Date();
+            const period = currentPeriod;
+            let index = 0;
+
+            switch (period) {
+                case 'day':
+                    // Horas do dia (agrupadas de 3 em 3)
+                    index = Math.floor(date.getHours() / 3);
+                    break;
+                case 'week':
+                    // Dias da semana
+                    index = date.getDay() || 7; // Converter 0 (domingo) para 7
+                    index -= 1; // Ajustar para índice 0-6
+                    break;
+                case 'month':
+                    // Semanas do mês
+                    const dayOfMonth = date.getDate();
+                    index = Math.floor((dayOfMonth - 1) / 7);
+                    break;
+                case 'semester':
+                    // Meses do semestre
+                    const semesterStart = now.getMonth() < 6 ? 0 : 6;
+                    index = date.getMonth() - semesterStart;
+                    if (index < 0) index += 12;
+                    break;
+                case 'year':
+                    // Meses do ano
+                    index = date.getMonth();
+                    break;
+            }
+
+            if (index >= 0 && index < data.income.length) {
+                data.income[index] += incomeAmount;
+                data.expenses[index] += expenseAmount;
+            }
+        }
+
+        // Atualizar ponto de dados no gráfico de tendência de lucro
+        function updateProfitTrendDataPoint(data, date, amount) {
+            const now = new Date();
+            const period = currentPeriod;
+            let index = 0;
+
+            switch (period) {
+                case 'day':
+                    // Horas do dia (agrupadas de 2 em 2)
+                    index = Math.floor(date.getHours() / 2);
+                    break;
+                case 'week':
+                    // Dias da semana
+                    index = date.getDay() || 7; // Converter 0 (domingo) para 7
+                    index -= 1; // Ajustar para índice 0-6
+                    break;
+                case 'month':
+                    // Dias do mês (agrupados por 5)
+                    index = Math.floor((date.getDate() - 1) / 5);
+                    break;
+                case 'semester':
+                    // Meses do semestre
+                    const semesterStart = now.getMonth() < 6 ? 0 : 6;
+                    index = date.getMonth() - semesterStart;
+                    if (index < 0) index += 12;
+                    break;
+                case 'year':
+                    // Meses do ano
+                    index = date.getMonth();
+                    break;
+            }
+
+            if (index >= 0 && index < data.data.length) {
+                data.data[index] += amount;
+            }
+        }
+
+        // Atualizar comparações com períodos anteriores
+        function updateComparisons(data) {
+            // Implementação simplificada - em um sistema real, seria necessário
+            // calcular os dados do período anterior para fazer comparações reais
+            const incomeComparison = document.getElementById('incomeComparison');
+            const expensesComparison = document.getElementById('expensesComparison');
+            const profitComparison = document.getElementById('profitComparison');
+            const ridesComparison = document.getElementById('ridesComparison');
+
+            if (!data.hasData) {
+                incomeComparison.innerHTML = '<span>Sem dados anteriores</span>';
+                expensesComparison.innerHTML = '<span>Sem dados anteriores</span>';
+                profitComparison.innerHTML = '<span>Sem dados anteriores</span>';
+                ridesComparison.innerHTML = '<span>Sem dados anteriores</span>';
+                return;
+            }
+
+            // Simulação de comparações
+            incomeComparison.innerHTML = `
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+                <span>Novo valor</span>
+            `;
+
+            expensesComparison.innerHTML = `
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+                <span>Novo valor</span>
+            `;
+
+            profitComparison.innerHTML = `
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+                <span>Novo valor</span>
+            `;
+
+            ridesComparison.innerHTML = `
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+                <span>Novo valor</span>
+            `;
+        }
+
+        // Mostrar/ocultar estados vazios
+        function toggleEmptyStates(data) {
+            // Gráfico de ganhos vs despesas
+            document.getElementById('incomeExpensesChart').style.display = data.hasData ? 'block' : 'none';
+            document.getElementById('incomeExpensesEmptyState').style.display = data.hasData ? 'none' : 'flex';
+
+            // Gráfico de categorias de despesas
+            document.getElementById('expenseCategoriesChart').style.display = data.hasExpenses ? 'block' : 'none';
+            document.getElementById('expenseCategoriesEmptyState').style.display = data.hasExpenses ? 'none' : 'flex';
+
+            // Gráfico de desempenho por dia da semana
+            document.getElementById('weekdayPerformanceChart').style.display = data.hasData ? 'block' : 'none';
+            document.getElementById('weekdayPerformanceEmptyState').style.display = data.hasData ? 'none' : 'flex';
+
+            // Gráfico de tendência de lucro
+            document.getElementById('profitTrendChart').style.display = data.hasData ? 'block' : 'none';
+            document.getElementById('profitTrendEmptyState').style.display = data.hasData ? 'none' : 'flex';
+
+            // Tabela de transações
+            document.getElementById('emptyTransactionsMessage').style.display = transactions.length > 0 ? 'none' : 'block';
+        }
+
+        // Atualizar gráfico de Ganhos vs Despesas
         function updateIncomeExpensesChart(data) {
             charts.incomeExpenses.data.labels = data.labels;
             charts.incomeExpenses.data.datasets[0].data = data.income;
@@ -1149,59 +1230,35 @@
             const amount = parseFloat(document.getElementById('transactionAmount').value) || 0;
             const rides = type === 'income' ? parseInt(document.getElementById('transactionRides').value || 0) : 0;
             const category = document.getElementById('transactionCategory').options[document.getElementById('transactionCategory').selectedIndex].text;
+            const date = document.getElementById('transactionDate').value;
 
-            // Criar uma cópia dos dados atuais
-            const previewData = JSON.parse(JSON.stringify(sampleData));
+            // Criar uma transação temporária
+            const tempTransaction = {
+                id: currentTransactionId || Date.now(),
+                date: date,
+                description: document.getElementById('transactionDescription').value || 'Nova transação',
+                category: category,
+                type: type,
+                amount: amount,
+                rides: rides
+            };
 
-            // Atualizar os valores com base na transação atual
-            for (const period in previewData) {
-                if (type === 'income') {
-                    previewData[period].income += amount;
-                    previewData[period].profit += amount;
-                    previewData[period].rides += rides;
+            // Criar uma cópia das transações
+            let tempTransactions = [...transactions];
 
-                    // Atualizar o último valor no gráfico de receitas
-                    const lastIndex = previewData[period].incomeExpensesData.income.length - 1;
-                    previewData[period].incomeExpensesData.income[lastIndex] += amount;
-
-                    // Atualizar o último valor no gráfico de lucro
-                    const lastProfitIndex = previewData[period].profitTrendData.data.length - 1;
-                    previewData[period].profitTrendData.data[lastProfitIndex] += amount;
-
-                    // Atualizar o último valor no gráfico de desempenho por dia
-                    const lastWeekdayIndex = previewData[period].weekdayPerformanceData.data.length - 1;
-                    previewData[period].weekdayPerformanceData.data[lastWeekdayIndex] += amount;
-                } else {
-                    previewData[period].expenses += amount;
-                    previewData[period].profit -= amount;
-
-                    // Atualizar o último valor no gráfico de despesas
-                    const lastIndex = previewData[period].incomeExpensesData.expenses.length - 1;
-                    previewData[period].incomeExpensesData.expenses[lastIndex] += amount;
-
-                    // Atualizar o último valor no gráfico de lucro
-                    const lastProfitIndex = previewData[period].profitTrendData.data.length - 1;
-                    previewData[period].profitTrendData.data[lastProfitIndex] -= amount;
-
-                    // Atualizar o último valor no gráfico de desempenho por dia
-                    const lastWeekdayIndex = previewData[period].weekdayPerformanceData.data.length - 1;
-                    previewData[period].weekdayPerformanceData.data[lastWeekdayIndex] -= amount;
-
-                    // Atualizar categorias de despesas
-                    if (amount > 0) {
-                        const categoryIndex = previewData[period].expenseCategoriesData.labels.indexOf(category);
-                        if (categoryIndex !== -1) {
-                            previewData[period].expenseCategoriesData.data[categoryIndex] += amount;
-                        } else {
-                            previewData[period].expenseCategoriesData.labels.push(category);
-                            previewData[period].expenseCategoriesData.data.push(amount);
-                        }
-                    }
-                }
+            // Se estiver editando, remover a transação original
+            if (currentTransactionId) {
+                tempTransactions = tempTransactions.filter(t => t.id !== currentTransactionId);
             }
 
-            // Atualizar o dashboard com os dados de prévia
-            const data = previewData[currentPeriod];
+            // Adicionar a transação temporária
+            tempTransactions.push(tempTransaction);
+
+            // Calcular dados do dashboard com a transação temporária
+            const originalTransactions = transactions;
+            transactions = tempTransactions;
+            const data = calculateDashboardData(currentPeriod);
+            transactions = originalTransactions;
 
             // Atualizar resumo
             document.getElementById('totalIncome').textContent = formatCurrency(data.income);
@@ -1214,6 +1271,9 @@
             updateExpenseCategoriesChart(data.expenseCategoriesData);
             updateWeekdayPerformanceChart(data.weekdayPerformanceData);
             updateProfitTrendChart(data.profitTrendData);
+
+            // Mostrar/ocultar estados vazios
+            toggleEmptyStates(data);
         }
 
         // Salvar transação
@@ -1252,62 +1312,13 @@
                 transactions.unshift(transaction);
             }
 
-            // Atualizar os dados do dashboard com base na nova transação
-            updateDashboardData(transaction);
+            // Salvar no localStorage
+            saveTransactionsToLocalStorage();
 
             // Atualizar tabela e dashboard
             filterTransactions();
             updateDashboard(currentPeriod);
             closeTransactionModal();
-        }
-
-        // Atualizar os dados do dashboard com base na nova transação
-        function updateDashboardData(transaction) {
-            for (const period in sampleData) {
-                if (transaction.type === 'income') {
-                    sampleData[period].income += transaction.amount;
-                    sampleData[period].profit += transaction.amount;
-                    sampleData[period].rides += transaction.rides;
-
-                    // Atualizar o último valor no gráfico de receitas
-                    const lastIndex = sampleData[period].incomeExpensesData.income.length - 1;
-                    sampleData[period].incomeExpensesData.income[lastIndex] += transaction.amount;
-
-                    // Atualizar o último valor no gráfico de lucro
-                    const lastProfitIndex = sampleData[period].profitTrendData.data.length - 1;
-                    sampleData[period].profitTrendData.data[lastProfitIndex] += transaction.amount;
-
-                    // Atualizar o último valor no gráfico de desempenho por dia
-                    const lastWeekdayIndex = sampleData[period].weekdayPerformanceData.data.length - 1;
-                    sampleData[period].weekdayPerformanceData.data[lastWeekdayIndex] += transaction.amount;
-                } else {
-                    sampleData[period].expenses += transaction.amount;
-                    sampleData[period].profit -= transaction.amount;
-
-                    // Atualizar o último valor no gráfico de despesas
-                    const lastIndex = sampleData[period].incomeExpensesData.expenses.length - 1;
-                    sampleData[period].incomeExpensesData.expenses[lastIndex] += transaction.amount;
-
-                    // Atualizar o último valor no gráfico de lucro
-                    const lastProfitIndex = sampleData[period].profitTrendData.data.length - 1;
-                    sampleData[period].profitTrendData.data[lastProfitIndex] -= transaction.amount;
-
-                    // Atualizar o último valor no gráfico de desempenho por dia
-                    const lastWeekdayIndex = sampleData[period].weekdayPerformanceData.data.length - 1;
-                    sampleData[period].weekdayPerformanceData.data[lastWeekdayIndex] -= transaction.amount;
-
-                    // Atualizar categorias de despesas
-                    if (transaction.amount > 0) {
-                        const categoryIndex = sampleData[period].expenseCategoriesData.labels.indexOf(transaction.category);
-                        if (categoryIndex !== -1) {
-                            sampleData[period].expenseCategoriesData.data[categoryIndex] += transaction.amount;
-                        } else {
-                            sampleData[period].expenseCategoriesData.labels.push(transaction.category);
-                            sampleData[period].expenseCategoriesData.data.push(transaction.amount);
-                        }
-                    }
-                }
-            }
         }
 
         // Editar transação
@@ -1333,68 +1344,14 @@
         // Excluir transação
         function deleteTransaction() {
             if (currentTransactionId) {
-                const transaction = transactions.find(t => t.id === currentTransactionId);
-                if (transaction) {
-                    // Reverter os efeitos da transação nos dados do dashboard
-                    revertTransactionFromDashboard(transaction);
-                }
-
                 transactions = transactions.filter(t => t.id !== currentTransactionId);
+
+                // Salvar no localStorage
+                saveTransactionsToLocalStorage();
+
                 filterTransactions();
                 updateDashboard(currentPeriod);
                 closeDeleteConfirmModal();
-            }
-        }
-
-        // Reverter os efeitos de uma transação nos dados do dashboard
-        function revertTransactionFromDashboard(transaction) {
-            for (const period in sampleData) {
-                if (transaction.type === 'income') {
-                    sampleData[period].income -= transaction.amount;
-                    sampleData[period].profit -= transaction.amount;
-                    sampleData[period].rides -= transaction.rides;
-
-                    // Atualizar o último valor no gráfico de receitas
-                    const lastIndex = sampleData[period].incomeExpensesData.income.length - 1;
-                    sampleData[period].incomeExpensesData.income[lastIndex] -= transaction.amount;
-
-                    // Atualizar o último valor no gráfico de lucro
-                    const lastProfitIndex = sampleData[period].profitTrendData.data.length - 1;
-                    sampleData[period].profitTrendData.data[lastProfitIndex] -= transaction.amount;
-
-                    // Atualizar o último valor no gráfico de desempenho por dia
-                    const lastWeekdayIndex = sampleData[period].weekdayPerformanceData.data.length - 1;
-                    sampleData[period].weekdayPerformanceData.data[lastWeekdayIndex] -= transaction.amount;
-                } else {
-                    sampleData[period].expenses -= transaction.amount;
-                    sampleData[period].profit += transaction.amount;
-
-                    // Atualizar o último valor no gráfico de despesas
-                    const lastIndex = sampleData[period].incomeExpensesData.expenses.length - 1;
-                    sampleData[period].incomeExpensesData.expenses[lastIndex] -= transaction.amount;
-
-                    // Atualizar o último valor no gráfico de lucro
-                    const lastProfitIndex = sampleData[period].profitTrendData.data.length - 1;
-                    sampleData[period].profitTrendData.data[lastProfitIndex] += transaction.amount;
-
-                    // Atualizar o último valor no gráfico de desempenho por dia
-                    const lastWeekdayIndex = sampleData[period].weekdayPerformanceData.data.length - 1;
-                    sampleData[period].weekdayPerformanceData.data[lastWeekdayIndex] += transaction.amount;
-
-                    // Atualizar categorias de despesas
-                    if (transaction.amount > 0) {
-                        const categoryIndex = sampleData[period].expenseCategoriesData.labels.indexOf(transaction.category);
-                        if (categoryIndex !== -1) {
-                            sampleData[period].expenseCategoriesData.data[categoryIndex] -= transaction.amount;
-
-                            // Remover a categoria se o valor for zero
-                            if (sampleData[period].expenseCategoriesData.data[categoryIndex] <= 0) {
-                                sampleData[period].expenseCategoriesData.labels.splice(categoryIndex, 1);
-                                sampleData[period].expenseCategoriesData.data.splice(categoryIndex, 1);
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -1403,8 +1360,18 @@
             const tableBody = document.getElementById('transactionsTable');
             const paginationContainer = document.getElementById('pagination');
             const paginationInfo = document.getElementById('paginationInfo');
+            const emptyMessage = document.getElementById('emptyTransactionsMessage');
 
             tableBody.innerHTML = '';
+
+            if (filteredTransactions.length === 0) {
+                emptyMessage.classList.remove('hidden');
+                paginationInfo.textContent = 'Mostrando 0 de 0 transações';
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            emptyMessage.classList.add('hidden');
 
             // Calcular paginação
             const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
@@ -1493,6 +1460,8 @@
         function createPagination(totalPages, container) {
             container.innerHTML = '';
 
+            if (totalPages <= 1) return;
+
             // Botão anterior
             const prevButton = document.createElement('button');
             prevButton.className = 'w-8 h-8 flex items-center justify-center rounded bg-gray-800 text-gray-400 pagination-btn';
@@ -1550,6 +1519,11 @@
 
         // Exportar para PDF
         function exportToPdf() {
+            if (transactions.length === 0) {
+                alert('Não há dados para exportar. Adicione transações primeiro.');
+                return;
+            }
+
             const element = document.body;
             const opt = {
                 margin: 10,
@@ -1588,6 +1562,12 @@
             const date = new Date(dateString);
             return date.toLocaleDateString('pt-BR');
         }
+
+        // Obter nome do mês
+        function getMonthName(monthIndex) {
+            const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            return months[monthIndex];
+        }
     </script>
     <script>
         (function() {
@@ -1595,7 +1575,7 @@
                 var b = a.contentDocument || a.contentWindow.document;
                 if (b) {
                     var d = b.createElement('script');
-                    d.innerHTML = "window.__CF$cv$params={r:'946d57c3026bf1c1',t:'MTc0ODQzMTAxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+                    d.innerHTML = "window.__CF$cv$params={r:'946e3854028bc504',t:'MTc0ODQ0MDIxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
                     b.getElementsByTagName('head')[0].appendChild(d)
                 }
             }
