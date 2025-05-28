@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UberFlix - Controle Financeiro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;500;700&display=swap');
+        :root {
+            --netflix-red: #e50914;
+            --netflix-black: #141414;
+            --netflix-dark-gray: #181818;
+            --netflix-gray: #222222;
+            --netflix-light-gray: #303030;
+            --netflix-text: #e5e5e5;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--netflix-black);
+            color: var(--netflix-text);
+            min-height: 100vh;
+            background-image: linear-gradient(to bottom, #0a0a0a, #141414);
+        }
+
+        h1,
+        h2,
+        h3,
+        .netflix-title {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .netflix-card {
+            background-color: var(--netflix-dark-gray);
+            border-radius: 8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background-image: linear-gradient(to bottom, #202020, #181818);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .netflix-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .netflix-btn {
+            background-image: linear-gradient(to bottom, #ff0f1b, #e50914);
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(229, 9, 20, 0.3);
+        }
+
+        .netflix-btn:hover {
+            background-image: linear-gradient(to bottom, #ff1f2b, #f40612);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .netflix-btn-secondary {
+            background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .netflix-btn-secondary:hover {
+            background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15));
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .netflix-tab {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .netflix-tab-active {
+            border-bottom: 2px solid var(--netflix-red);
+            color: white;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.05);
+        }
+
+        .stats-container {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background-image: linear-gradient(to bottom, #202020, #181818);
+            padding: 20px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(20, 20, 20, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .month-selector {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .month-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .month-btn {
+            padding: 8px;
+            text-align: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+            background-image: linear-gradient(to bottom, #333333, #222222);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .month-active {
+            background-image: linear-gradient(to bottom, #ff0f1b, #e50914);
+            color: white;
+            box-shadow: 0 4px 10px rgba(229, 9, 20, 0.3);
+        }
+
+        /* Netflix-style loading animation */
+
+        .netflix-loader {
+            width: 125px;
+            height: 125px;
+        }
+
+        .netflix-loader div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--netflix-red);
+            animation: netflix-loader 1.2s linear infinite;
+            transform-origin: center;
+            opacity: 0;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
+        }
+
+        .netflix-loader div:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .netflix-loader div:nth-child(2) {
+            animation-delay: 0.4s;
+        }
+
+        .netflix-loader div:nth-child(3) {
+            animation-delay: 0.8s;
+        }
+
+        @keyframes netflix-loader {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            40% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+        }
+
+        /* Netflix-style input fields */
+
+        .netflix-input {
+            background-color: #333;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 10px 15px;
+            width: 100%;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+
+        .netflix-input:focus {
+            outline: none;
+            background-color: #454545;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(229, 9, 20, 0.3);
+        }
+
+        /* Netflix-style select */
+
+        .netflix-select {
+            background-color: #333;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 10px 15px;
+            width: 100%;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+
+        .netflix-select:focus {
+            outline: none;
+            background-color: #454545;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(229, 9, 20, 0.3);
+        }
+
+        /* Netflix-style scrollbar */
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--netflix-black);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        /* PSD style card stats */
+
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 40px;
+            opacity: 0.2;
+        }
+
+        /* Glassmorphism effect */
+
+        .glass-effect {
+            background: rgba(40, 40, 40, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Gradient text */
+
+        .gradient-text {
+            background: linear-gradient(to right, #e50914, #ff5f6d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        /* Glow effect */
+
+        .glow-effect {
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
+        }
+
+        /* Card hover effect */
+
+        .hover-lift {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Stat item styles */
+
+        .stat-item {
+            padding: 10px;
+            border-radius: 6px;
+            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+            transform: translateX(5px);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .stat-value.positive {
+            color: #4ade80;
+        }
+
+        .stat-value.negative {
+            color: #f87171;
+        }
+
+        .stat-value.neutral {
+            color: #60a5fa;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .trend-up {
+            color: #4ade80;
+        }
+
+        .trend-down {
+            color: #f87171;
+        }
+
+        .trend-neutral {
+            color: #60a5fa;
+        }
+
+        /* Progress bar styles */
+
+        .progress-container {
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            background-image: linear-gradient(to right, #e50914, #ff5f6d);
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold gradient-text netflix-title">UBERFLIX</h1>
+                <p class="text-gray-400">Controle Financeiro para Motoristas</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <button id="addEntryBtn" class="netflix-btn px-6 py-2 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Novo Registro
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="netflix-card p-5 stat-card hover-lift">
+                <h3 class="text-gray-400 text-sm mb-1">Ganhos Totais</h3>
+                <div class="flex items-end">
+                    <span id="totalEarnings" class="text-2xl font-bold text-green-400">R$ 0,00</span>
+                    <span id="earningsChange" class="ml-2 text-xs text-green-400">+0%</span>
+                </div>
+                <div class="stat-icon">💰</div>
+            </div>
+            <div class="netflix-card p-5 stat-card hover-lift">
+                <h3 class="text-gray-400 text-sm mb-1">Despesas</h3>
+                <div class="flex items-end">
+                    <span id="totalExpenses" class="text-2xl font-bold text-red-400">R$ 0,00</span>
+                    <span id="expensesChange" class="ml-2 text-xs text-red-400">+0%</span>
+                </div>
+                <div class="stat-icon">💸</div>
+            </div>
+            <div class="netflix-card p-5 stat-card hover-lift">
+                <h3 class="text-gray-400 text-sm mb-1">Lucro Líquido</h3>
+                <div class="flex items-end">
+                    <span id="netProfit" class="text-2xl font-bold text-blue-400">R$ 0,00</span>
+                    <span id="profitChange" class="ml-2 text-xs text-blue-400">+0%</span>
+                </div>
+                <div class="stat-icon">📈</div>
+            </div>
+            <div class="netflix-card p-5 stat-card hover-lift">
+                <h3 class="text-gray-400 text-sm mb-1">Corridas</h3>
+                <div class="flex items-end">
+                    <span id="totalRides" class="text-2xl font-bold text-netflix-red">0</span>
+                    <span id="ridesChange" class="ml-2 text-xs text-netflix-red">+0%</span>
+                </div>
+                <div class="stat-icon">🚗</div>
+            </div>
+        </div>
+
+        <!-- Statistics Dashboard (replacing 3D visualization) -->
+        <div class="netflix-card p-5 mb-8 hover-lift">
+            <h2 class="text-2xl font-semibold mb-4 netflix-title">ESTATÍSTICAS DETALHADAS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="stats-container">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="stat-item">
+                                <div class="stat-label">Média de Ganhos por Dia</div>
+                                <div class="stat-value positive" id="avgEarningsPerDay">R$ 201,63</div>
+                                <div class="stat-trend trend-up">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg> +8% em relação ao mês anterior
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Média de Despesas por Dia</div>
+                                <div class="stat-value negative" id="avgExpensesPerDay">R$ 76,25</div>
+                                <div class="stat-trend trend-down">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1v-5a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd" />
+                                    </svg> -3% em relação ao mês anterior
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Média de Corridas por Dia</div>
+                                <div class="stat-value neutral" id="avgRidesPerDay">9.5</div>
+                                <div class="stat-trend trend-neutral">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg> +5% em relação ao mês anterior
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="stat-item">
+                                <div class="stat-label">Valor Médio por Corrida</div>
+                                <div class="stat-value positive" id="avgValuePerRide">R$ 21,22</div>
+                                <div class="stat-trend trend-up">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg> +3% em relação ao mês anterior
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Margem de Lucro</div>
+                                <div class="stat-value positive" id="profitMargin">62.2%</div>
+                                <div class="progress-container">
+                                    <div class="progress-bar" style="width: 62.2%"></div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Dias Mais Rentáveis</div>
+                                <div class="stat-value neutral" id="bestDays">Sex, Sáb</div>
+                                <div class="stat-trend trend-neutral">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg> +35% acima da média semanal
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="netflix-card p-5 hover-lift">
+                <h2 class="text-2xl font-semibold mb-4 netflix-title">GANHOS VS DESPESAS</h2>
+                <div class="chart-container">
+                    <canvas id="earningsChart"></canvas>
+                </div>
+            </div>
+            <div class="netflix-card p-5 hover-lift">
+                <h2 class="text-2xl font-semibold mb-4 netflix-title">DISTRIBUIÇÃO DE DESPESAS</h2>
+                <div class="chart-container">
+                    <canvas id="expensesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="netflix-card p-5 mb-8 hover-lift">
+            <h2 class="text-2xl font-semibold mb-4 netflix-title">FILTROS</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Período</label>
+                    <select id="periodFilter" class="netflix-select">
+                        <option value="day">Dia</option>
+                        <option value="week">Semana</option>
+                        <option value="month" selected>Mês</option>
+                        <option value="semester">Semestre</option>
+                        <option value="year">Ano</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Tipo</label>
+                    <select id="typeFilter" class="netflix-select">
+                        <option value="all">Todos</option>
+                        <option value="earnings">Ganhos</option>
+                        <option value="fuel">Combustível</option>
+                        <option value="maintenance">Manutenção</option>
+                        <option value="other">Outros</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Ordenar por</label>
+                    <select id="sortFilter" class="netflix-select">
+                        <option value="date-desc">Data (mais recente)</option>
+                        <option value="date-asc">Data (mais antiga)</option>
+                        <option value="amount-desc">Valor (maior)</option>
+                        <option value="amount-asc">Valor (menor)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-1">Mês</label>
+                <div class="month-selector">
+                    <button class="month-btn month-active" data-month="0">Janeiro</button>
+                    <button class="month-btn" data-month="1">Fevereiro</button>
+                    <button class="month-btn" data-month="2">Março</button>
+                    <button class="month-btn" data-month="3">Abril</button>
+                    <button class="month-btn" data-month="4">Maio</button>
+                    <button class="month-btn" data-month="5">Junho</button>
+                    <button class="month-btn" data-month="6">Julho</button>
+                    <button class="month-btn" data-month="7">Agosto</button>
+                    <button class="month-btn" data-month="8">Setembro</button>
+                    <button class="month-btn" data-month="9">Outubro</button>
+                    <button class="month-btn" data-month="10">Novembro</button>
+                    <button class="month-btn" data-month="11">Dezembro</button>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button id="applyFilters" class="netflix-btn px-6 py-2">
+                    Aplicar Filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="netflix-card p-5 mb-8 overflow-x-auto hover-lift">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold netflix-title">REGISTROS</h2>
+                <div class="flex items-center">
+                    <input id="searchInput" type="text" placeholder="Pesquisar..." class="netflix-input mr-2">
+                    <button id="exportBtn" class="netflix-btn px-4 py-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Exportar
+                    </button>
+                </div>
+            </div>
+
+            <table class="w-full">
+                <thead>
+                    <tr class="text-left text-gray-400">
+                        <th class="py-3">Data</th>
+                        <th class="py-3">Descrição</th>
+                        <th class="py-3">Categoria</th>
+                        <th class="py-3">Valor</th>
+                        <th class="py-3">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="entriesTable">
+                    <!-- Table data will be populated by JavaScript -->
+                </tbody>
+            </table>
+
+            <div id="emptyState" class="py-8 text-center text-gray-500">
+                <div class="netflix-loader mx-auto mb-4 relative">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <p>Nenhum registro encontrado. Adicione seu primeiro registro!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Entry Modal -->
+    <div id="entryModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="bg-netflix-dark-gray rounded-lg p-6 w-full max-w-md glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modalTitle" class="text-2xl font-semibold netflix-title gradient-text">NOVO REGISTRO</h3>
+                <button id="closeModal" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="entryForm">
+                <input type="hidden" id="entryId">
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-1">Data</label>
+                    <input type="date" id="entryDate" class="netflix-input" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-1">Tipo</label>
+                    <select id="entryType" class="netflix-select" required>
+                        <option value="earnings">Ganhos</option>
+                        <option value="fuel">Combustível</option>
+                        <option value="maintenance">Manutenção</option>
+                        <option value="other">Outros</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-1">Descrição</label>
+                    <input type="text" id="entryDescription" class="netflix-input" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-1">Valor (R$)</label>
+                    <input type="number" id="entryAmount" step="0.01" class="netflix-input" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-1">Observações (opcional)</label>
+                    <textarea id="entryNotes" class="netflix-input" rows="3"></textarea>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="button" id="cancelEntry" class="netflix-btn-secondary px-4 py-2 mr-2">Cancelar</button>
+                    <button type="submit" id="saveEntry" class="netflix-btn px-4 py-2">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="bg-netflix-dark-gray rounded-lg p-6 w-full max-w-md glass-effect">
+            <h3 class="text-2xl font-semibold netflix-title gradient-text mb-4">CONFIRMAR EXCLUSÃO</h3>
+            <p class="text-gray-300 mb-6">Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.</p>
+
+            <div class="flex justify-end">
+                <button id="cancelDelete" class="netflix-btn-secondary px-4 py-2 mr-2">Cancelar</button>
+                <button id="confirmDelete" class="netflix-btn px-4 py-2">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Sample data structure
+        let financialData = {
+            entries: [{
+                    id: 1,
+                    date: '2023-01-05',
+                    type: 'earnings',
+                    description: 'Corridas - Segunda-feira',
+                    amount: 180.50,
+                    notes: '8 corridas realizadas'
+                },
+                {
+                    id: 2,
+                    date: '2023-01-05',
+                    type: 'fuel',
+                    description: 'Abastecimento',
+                    amount: -70.00,
+                    notes: 'Posto Shell'
+                },
+                {
+                    id: 3,
+                    date: '2023-01-07',
+                    type: 'earnings',
+                    description: 'Corridas - Quarta-feira',
+                    amount: 210.75,
+                    notes: '10 corridas realizadas'
+                },
+                {
+                    id: 4,
+                    date: '2023-01-10',
+                    type: 'maintenance',
+                    description: 'Troca de óleo',
+                    amount: -120.00,
+                    notes: 'Oficina do João'
+                },
+                {
+                    id: 5,
+                    date: '2023-01-12',
+                    type: 'earnings',
+                    description: 'Corridas - Sexta-feira',
+                    amount: 195.25,
+                    notes: '9 corridas realizadas'
+                },
+                {
+                    id: 6,
+                    date: '2023-01-12',
+                    type: 'fuel',
+                    description: 'Abastecimento',
+                    amount: -80.00,
+                    notes: 'Posto Ipiranga'
+                },
+                {
+                    id: 7,
+                    date: '2023-01-15',
+                    type: 'other',
+                    description: 'Lavagem do carro',
+                    amount: -35.00,
+                    notes: 'Lava-rápido'
+                },
+                {
+                    id: 8,
+                    date: '2023-01-18',
+                    type: 'earnings',
+                    description: 'Corridas - Quarta-feira',
+                    amount: 220.00,
+                    notes: '11 corridas realizadas'
+                }
+            ],
+            currentMonth: 0, // January
+            currentYear: 2023
+        };
+
+        // DOM Elements
+        const entriesTable = document.getElementById('entriesTable');
+        const emptyState = document.getElementById('emptyState');
+        const entryModal = document.getElementById('entryModal');
+        const deleteModal = document.getElementById('deleteModal');
+        const entryForm = document.getElementById('entryForm');
+        const addEntryBtn = document.getElementById('addEntryBtn');
+        const closeModal = document.getElementById('closeModal');
+        const cancelEntry = document.getElementById('cancelEntry');
+        const cancelDelete = document.getElementById('cancelDelete');
+        const confirmDelete = document.getElementById('confirmDelete');
+        const searchInput = document.getElementById('searchInput');
+        const exportBtn = document.getElementById('exportBtn');
+        const applyFilters = document.getElementById('applyFilters');
+        const monthButtons = document.querySelectorAll('.month-btn');
+
+        // Form fields
+        const entryId = document.getElementById('entryId');
+        const entryDate = document.getElementById('entryDate');
+        const entryType = document.getElementById('entryType');
+        const entryDescription = document.getElementById('entryDescription');
+        const entryAmount = document.getElementById('entryAmount');
+        const entryNotes = document.getElementById('entryNotes');
+
+        // Filter fields
+        const periodFilter = document.getElementById('periodFilter');
+        const typeFilter = document.getElementById('typeFilter');
+        const sortFilter = document.getElementById('sortFilter');
+
+        // Summary elements
+        const totalEarnings = document.getElementById('totalEarnings');
+        const totalExpenses = document.getElementById('totalExpenses');
+        const netProfit = document.getElementById('netProfit');
+        const totalRides = document.getElementById('totalRides');
+
+        // Charts
+        let earningsChart;
+        let expensesChart;
+        let trendChart;
+
+        // Current entry being edited or deleted
+        let currentEntryId = null;
+
+        // Initialize the application
+        function init() {
+            // Load data from localStorage if available
+            const savedData = localStorage.getItem('uberFinancialData');
+            if (savedData) {
+                try {
+                    financialData = JSON.parse(savedData);
+                    console.log("Dados carregados com sucesso:", financialData);
+                } catch (e) {
+                    console.error("Erro ao carregar dados:", e);
+                    // Se houver erro ao carregar, mantenha os dados de exemplo
+                }
+            }
+
+            // Set default date to today
+            const today = new Date();
+            entryDate.value = today.toISOString().split('T')[0];
+
+            // Initialize charts
+            initCharts();
+
+            // Render data
+            renderData();
+
+            // Update summary
+            updateSummary();
+
+            // Update statistics
+            updateStatistics();
+
+            // Event listeners
+            setupEventListeners();
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // PSD style color palette with gradients
+            const createGradient = (ctx, colorStart, colorEnd) => {
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, colorStart);
+                gradient.addColorStop(1, colorEnd);
+                return gradient;
+            };
+
+            // Earnings vs Expenses Chart
+            const earningsCtx = document.getElementById('earningsChart').getContext('2d');
+
+            // Create gradients
+            const earningsGradient = createGradient(earningsCtx, 'rgba(255, 15, 27, 0.8)', 'rgba(229, 9, 20, 0.8)');
+            const expensesGradient = createGradient(earningsCtx, 'rgba(136, 136, 136, 0.8)', 'rgba(85, 85, 85, 0.8)');
+
+            earningsChart = new Chart(earningsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [{
+                            label: 'Ganhos',
+                            backgroundColor: earningsGradient,
+                            borderColor: 'rgba(229, 9, 20, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            hoverBackgroundColor: 'rgba(255, 30, 40, 0.9)'
+                        },
+                        {
+                            label: 'Despesas',
+                            backgroundColor: expensesGradient,
+                            borderColor: 'rgba(128, 128, 128, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            hoverBackgroundColor: 'rgba(150, 150, 150, 0.9)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 10
+                                },
+                                padding: 10
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 10
+                                },
+                                padding: 5
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 12
+                                },
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleFont: {
+                                family: "'Roboto', sans-serif",
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: "'Roboto', sans-serif",
+                                size: 12
+                            },
+                            padding: 12,
+                            cornerRadius: 6,
+                            displayColors: false,
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+
+            // Expenses Distribution Chart
+            const expensesCtx = document.getElementById('expensesChart').getContext('2d');
+            expensesChart = new Chart(expensesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Combustível', 'Manutenção', 'Outros'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(229, 9, 20, 0.8)',
+                            'rgba(169, 169, 169, 0.8)',
+                            'rgba(105, 105, 105, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(229, 9, 20, 1)',
+                            'rgba(169, 169, 169, 1)',
+                            'rgba(105, 105, 105, 1)'
+                        ],
+                        borderWidth: 2,
+                        hoverBackgroundColor: [
+                            'rgba(255, 30, 40, 0.9)',
+                            'rgba(190, 190, 190, 0.9)',
+                            'rgba(125, 125, 125, 0.9)'
+                        ],
+                        hoverBorderColor: [
+                            'rgba(255, 255, 255, 0.8)',
+                            'rgba(255, 255, 255, 0.8)',
+                            'rgba(255, 255, 255, 0.8)'
+                        ],
+                        hoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 12
+                                },
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleFont: {
+                                family: "'Roboto', sans-serif",
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: "'Roboto', sans-serif",
+                                size: 12
+                            },
+                            padding: 12,
+                            cornerRadius: 6,
+                            displayColors: false,
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1
+                        }
+                    },
+                    elements: {
+                        arc: {
+                            borderWidth: 2
+                        }
+                    }
+                }
+            });
+
+            // Trend Chart (replacing 3D visualization)
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+
+            // Create gradients for trend chart
+            const profitGradient = createGradient(trendCtx, 'rgba(74, 222, 128, 0.8)', 'rgba(74, 222, 128, 0.2)');
+            const rideGradient = createGradient(trendCtx, 'rgba(96, 165, 250, 0.8)', 'rgba(96, 165, 250, 0.2)');
+
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['01/01', '05/01', '10/01', '15/01', '20/01', '25/01', '30/01'],
+                    datasets: [{
+                            label: 'Lucro Diário',
+                            data: [120, 150, 130, 180, 160, 210, 190],
+                            borderColor: 'rgba(74, 222, 128, 1)',
+                            backgroundColor: profitGradient,
+                            borderWidth: 3,
+                            pointBackgroundColor: 'rgba(74, 222, 128, 1)',
+                            pointBorderColor: '#fff',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Corridas',
+                            data: [8, 10, 9, 12, 11, 14, 13],
+                            borderColor: 'rgba(96, 165, 250, 1)',
+                            backgroundColor: rideGradient,
+                            borderWidth: 3,
+                            pointBackgroundColor: 'rgba(96, 165, 250, 1)',
+                            pointBorderColor: '#fff',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.4,
+                            fill: true,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            position: 'left',
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 10
+                                },
+                                padding: 10,
+                                callback: function(value) {
+                                    return 'R$ ' + value;
+                                }
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(96, 165, 250, 0.7)',
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 10
+                                },
+                                padding: 10
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 10
+                                },
+                                padding: 5
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 12
+                                },
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                            titleFont: {
+                                family: "'Roboto', sans-serif",
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: "'Roboto', sans-serif",
+                                size: 12
+                            },
+                            padding: 12,
+                            cornerRadius: 6,
+                            displayColors: false,
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.datasetIndex === 0) {
+                                        label += new Intl.NumberFormat('pt-BR', {
+                                            style: 'currency',
+                                            currency: 'BRL'
+                                        }).format(context.raw);
+                                    } else {
+                                        label += context.raw + ' corridas';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            updateCharts();
+        }
+
+        // Update charts with current data
+        function updateCharts() {
+            const monthlyData = getMonthlyData();
+
+            // Update Earnings vs Expenses Chart
+            const earningsData = [];
+            const expensesData = [];
+
+            for (let i = 0; i < 12; i++) {
+                const monthKey = `${i + 1}`;
+                earningsData.push(monthlyData[monthKey] ? .earnings || 0);
+                expensesData.push(Math.abs(monthlyData[monthKey] ? .expenses || 0));
+            }
+
+            earningsChart.data.datasets[0].data = earningsData;
+            earningsChart.data.datasets[1].data = expensesData;
+            earningsChart.update();
+
+            // Update Expenses Distribution Chart
+            const currentMonthData = getFilteredEntries();
+            let fuelExpenses = 0;
+            let maintenanceExpenses = 0;
+            let otherExpenses = 0;
+
+            currentMonthData.forEach(entry => {
+                if (entry.amount < 0) {
+                    switch (entry.type) {
+                        case 'fuel':
+                            fuelExpenses += Math.abs(entry.amount);
+                            break;
+                        case 'maintenance':
+                            maintenanceExpenses += Math.abs(entry.amount);
+                            break;
+                        case 'other':
+                            otherExpenses += Math.abs(entry.amount);
+                            break;
+                    }
+                }
+            });
+
+            expensesChart.data.datasets[0].data = [fuelExpenses, maintenanceExpenses, otherExpenses];
+            expensesChart.update();
+
+            // Update Trend Chart with daily data
+            updateTrendChart();
+        }
+
+        // Update trend chart with daily data
+        function updateTrendChart() {
+            const entries = getFilteredEntries();
+
+            // Group entries by date
+            const dailyData = {};
+            entries.forEach(entry => {
+                if (!dailyData[entry.date]) {
+                    dailyData[entry.date] = {
+                        profit: 0,
+                        rides: 0
+                    };
+                }
+
+                // Add to profit
+                dailyData[entry.date].profit += entry.amount;
+
+                // Count rides
+                if (entry.type === 'earnings') {
+                    // Extract number of rides from notes if available
+                    const ridesMatch = entry.notes ? .match(/(\d+)\s*corridas/i);
+                    if (ridesMatch) {
+                        dailyData[entry.date].rides += parseInt(ridesMatch[1]);
+                    } else {
+                        // Estimate rides based on average fare
+                        dailyData[entry.date].rides += Math.round(entry.amount / 20); // Assuming average fare of R$20
+                    }
+                }
+            });
+
+            // Sort dates
+            const sortedDates = Object.keys(dailyData).sort();
+
+            // Limit to 7 dates for better visualization
+            const displayDates = sortedDates.length > 7 ?
+                sortedDates.slice(sortedDates.length - 7) : sortedDates;
+
+            // Format dates for display
+            const labels = displayDates.map(date => {
+                const [year, month, day] = date.split('-');
+                return `${day}/${month}`;
+            });
+
+            // Extract profit and rides data
+            const profitData = displayDates.map(date => dailyData[date].profit);
+            const ridesData = displayDates.map(date => dailyData[date].rides);
+
+            // Update chart
+            trendChart.data.labels = labels;
+            trendChart.data.datasets[0].data = profitData;
+            trendChart.data.datasets[1].data = ridesData;
+            trendChart.update();
+        }
+
+        // Get monthly aggregated data
+        function getMonthlyData() {
+            const monthlyData = {};
+
+            financialData.entries.forEach(entry => {
+                const date = new Date(entry.date);
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+
+                if (year === financialData.currentYear) {
+                    const key = `${month}`;
+
+                    if (!monthlyData[key]) {
+                        monthlyData[key] = {
+                            earnings: 0,
+                            expenses: 0
+                        };
+                    }
+
+                    if (entry.amount > 0) {
+                        monthlyData[key].earnings += entry.amount;
+                    } else {
+                        monthlyData[key].expenses += entry.amount;
+                    }
+                }
+            });
+
+            return monthlyData;
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const entries = getFilteredEntries();
+
+            // Calculate statistics
+            let totalEarningsValue = 0;
+            let totalExpensesValue = 0;
+            let totalRidesValue = 0;
+            let daysWithEntries = new Set();
+
+            entries.forEach(entry => {
+                daysWithEntries.add(entry.date);
+
+                if (entry.amount > 0) {
+                    totalEarningsValue += entry.amount;
+
+                    // Count rides
+                    if (entry.type === 'earnings') {
+                        const ridesMatch = entry.notes ? .match(/(\d+)\s*corridas/i);
+                        if (ridesMatch) {
+                            totalRidesValue += parseInt(ridesMatch[1]);
+                        } else {
+                            totalRidesValue += Math.round(entry.amount / 20);
+                        }
+                    }
+                } else {
+                    totalExpensesValue += Math.abs(entry.amount);
+                }
+            });
+
+            const numDays = daysWithEntries.size || 1; // Avoid division by zero
+
+            // Calculate averages
+            const avgEarningsPerDay = totalEarningsValue / numDays;
+            const avgExpensesPerDay = totalExpensesValue / numDays;
+            const avgRidesPerDay = totalRidesValue / numDays;
+            const avgValuePerRide = totalRidesValue > 0 ? totalEarningsValue / totalRidesValue : 0;
+            const profitMargin = totalEarningsValue > 0 ?
+                ((totalEarningsValue - totalExpensesValue) / totalEarningsValue) * 100 : 0;
+
+            // Update DOM elements
+            document.getElementById('avgEarningsPerDay').textContent = new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(avgEarningsPerDay);
+
+            document.getElementById('avgExpensesPerDay').textContent = new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(avgExpensesPerDay);
+
+            document.getElementById('avgRidesPerDay').textContent = avgRidesPerDay.toFixed(1);
+
+            document.getElementById('avgValuePerRide').textContent = new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(avgValuePerRide);
+
+            document.getElementById('profitMargin').textContent = profitMargin.toFixed(1) + '%';
+
+            // Update progress bar
+            const progressBar = document.querySelector('.progress-bar');
+            progressBar.style.width = Math.max(0, Math.min(100, profitMargin)) + '%';
+
+            // Best days calculation (static for demo)
+            document.getElementById('bestDays').textContent = 'Sex, Sáb';
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Add entry button
+            addEntryBtn.addEventListener('click', () => {
+                openEntryModal();
+            });
+
+            // Close modal buttons
+            closeModal.addEventListener('click', () => {
+                entryModal.classList.add('hidden');
+            });
+
+            cancelEntry.addEventListener('click', () => {
+                entryModal.classList.add('hidden');
+            });
+
+            cancelDelete.addEventListener('click', () => {
+                deleteModal.classList.add('hidden');
+            });
+
+            // Form submission
+            entryForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveEntry();
+            });
+
+            // Delete confirmation
+            confirmDelete.addEventListener('click', () => {
+                deleteEntry(currentEntryId);
+                deleteModal.classList.add('hidden');
+            });
+
+            // Search input
+            searchInput.addEventListener('input', () => {
+                renderData();
+            });
+
+            // Export button
+            exportBtn.addEventListener('click', exportData);
+
+            // Apply filters
+            applyFilters.addEventListener('click', () => {
+                renderData();
+                updateCharts();
+                updateStatistics();
+            });
+
+            // Month selector
+            monthButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    monthButtons.forEach(btn => btn.classList.remove('month-active'));
+                    button.classList.add('month-active');
+                    financialData.currentMonth = parseInt(button.dataset.month);
+                    renderData();
+                    updateCharts();
+                    updateStatistics();
+                });
+            });
+        }
+
+        // Open entry modal for adding or editing
+        function openEntryModal(id = null) {
+            const modalTitle = document.getElementById('modalTitle');
+
+            if (id) {
+                // Edit existing entry
+                modalTitle.textContent = 'EDITAR REGISTRO';
+                const entry = financialData.entries.find(e => e.id === id);
+
+                if (entry) {
+                    entryId.value = entry.id;
+                    entryDate.value = entry.date;
+                    entryType.value = entry.type;
+                    entryDescription.value = entry.description;
+                    entryAmount.value = Math.abs(entry.amount);
+                    entryNotes.value = entry.notes || '';
+
+                    // Adjust amount sign based on type
+                    if (entry.type === 'earnings') {
+                        entryAmount.value = entry.amount;
+                    } else {
+                        entryAmount.value = Math.abs(entry.amount);
+                    }
+                }
+            } else {
+                // Add new entry
+                modalTitle.textContent = 'NOVO REGISTRO';
+                entryForm.reset();
+                entryId.value = '';
+
+                // Set default date to today
+                const today = new Date();
+                entryDate.value = today.toISOString().split('T')[0];
+            }
+
+            entryModal.classList.remove('hidden');
+        }
+
+        // Save entry (add or update)
+        function saveEntry() {
+            const id = entryId.value ? parseInt(entryId.value) : Date.now();
+            let amount = parseFloat(entryAmount.value);
+
+            // Make amount negative for expenses
+            if (entryType.value !== 'earnings' && amount > 0) {
+                amount = -amount;
+            }
+
+            const entry = {
+                id: parseInt(id),
+                date: entryDate.value,
+                type: entryType.value,
+                description: entryDescription.value,
+                amount: amount,
+                notes: entryNotes.value
+            };
+
+            if (entryId.value) {
+                // Update existing entry
+                const index = financialData.entries.findIndex(e => e.id === parseInt(entryId.value));
+                if (index !== -1) {
+                    financialData.entries[index] = entry;
+                }
+            } else {
+                // Add new entry
+                financialData.entries.push(entry);
+            }
+
+            // Save to localStorage
+            saveData();
+
+            // Close modal
+            entryModal.classList.add('hidden');
+
+            // Update UI
+            renderData();
+            updateSummary();
+            updateCharts();
+            updateStatistics();
+
+            // Log para debug
+            console.log("Registro salvo:", entry);
+            console.log("Dados atuais:", financialData);
+        }
+
+        // Open delete confirmation modal
+        function openDeleteModal(id) {
+            currentEntryId = id;
+            deleteModal.classList.remove('hidden');
+        }
+
+        // Delete entry
+        function deleteEntry(id) {
+            financialData.entries = financialData.entries.filter(entry => entry.id !== id);
+
+            // Save to localStorage
+            saveData();
+
+            // Update UI
+            renderData();
+            updateSummary();
+            updateCharts();
+            updateStatistics();
+
+            // Log para debug
+            console.log("Registro excluído:", id);
+            console.log("Dados atuais:", financialData);
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            try {
+                const dataString = JSON.stringify(financialData);
+                localStorage.setItem('uberFinancialData', dataString);
+                console.log("Dados salvos com sucesso:", dataString);
+            } catch (e) {
+                console.error("Erro ao salvar dados:", e);
+                alert("Erro ao salvar os dados. Por favor, tente novamente.");
+            }
+        }
+
+        // Get filtered entries based on current filters
+        function getFilteredEntries() {
+            let entries = [...financialData.entries];
+            const searchTerm = searchInput.value.toLowerCase();
+
+            // Apply search filter
+            if (searchTerm) {
+                entries = entries.filter(entry =>
+                    entry.description.toLowerCase().includes(searchTerm) ||
+                    entry.notes ? .toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Apply type filter
+            if (typeFilter.value !== 'all') {
+                entries = entries.filter(entry => entry.type === typeFilter.value);
+            }
+
+            // Apply period filter
+            const today = new Date();
+            const currentMonth = financialData.currentMonth;
+            const currentYear = financialData.currentYear;
+
+            switch (periodFilter.value) {
+                case 'day':
+                    const todayStr = today.toISOString().split('T')[0];
+                    entries = entries.filter(entry => entry.date === todayStr);
+                    break;
+                case 'week':
+                    const oneWeekAgo = new Date();
+                    oneWeekAgo.setDate(today.getDate() - 7);
+                    entries = entries.filter(entry => new Date(entry.date) >= oneWeekAgo);
+                    break;
+                case 'month':
+                    entries = entries.filter(entry => {
+                        const entryDate = new Date(entry.date);
+                        return entryDate.getMonth() === currentMonth &&
+                            entryDate.getFullYear() === currentYear;
+                    });
+                    break;
+                case 'semester':
+                    const semester = Math.floor(currentMonth / 6);
+                    entries = entries.filter(entry => {
+                        const entryDate = new Date(entry.date);
+                        return Math.floor(entryDate.getMonth() / 6) === semester &&
+                            entryDate.getFullYear() === currentYear;
+                    });
+                    break;
+                case 'year':
+                    entries = entries.filter(entry => {
+                        const entryDate = new Date(entry.date);
+                        return entryDate.getFullYear() === currentYear;
+                    });
+                    break;
+            }
+
+            // Apply sorting
+            switch (sortFilter.value) {
+                case 'date-desc':
+                    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'date-asc':
+                    entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    break;
+                case 'amount-desc':
+                    entries.sort((a, b) => b.amount - a.amount);
+                    break;
+                case 'amount-asc':
+                    entries.sort((a, b) => a.amount - b.amount);
+                    break;
+            }
+
+            return entries;
+        }
+
+        // Render data table
+        function renderData() {
+            const entries = getFilteredEntries();
+
+            // Clear table
+            entriesTable.innerHTML = '';
+
+            // Show empty state if no entries
+            if (entries.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+
+                // Render entries
+                entries.forEach(entry => {
+                            const row = document.createElement('tr');
+
+                            // Format date
+                            const date = new Date(entry.date);
+                            const formattedDate = date.toLocaleDateString('pt-BR');
+
+                            // Determine type class and icon
+                            let typeClass, typeIcon;
+                            switch (entry.type) {
+                                case 'earnings':
+                                    typeClass = 'text-netflix-red';
+                                    typeIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" /></svg>';
+                                    break;
+                                case 'fuel':
+                                    typeClass = 'text-gray-400';
+                                    typeIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" /><path fill-rule="evenodd" d="M3 10h14v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4z" clip-rule="evenodd" /></svg>';
+                                    break;
+                                case 'maintenance':
+                                    typeClass = 'text-gray-400';
+                                    typeIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>';
+                                    break;
+                                case 'other':
+                                    typeClass = 'text-gray-400';
+                                    typeIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('
+                                    script ');d.innerHTML="window.__CF$cv$params={r:'
+                                    946 cc067868ff1d6 ',t:'
+                                    MTc0ODQyNDgxOC4wMDAwMDA = '};var a=document.createElement('
+                                    script ');a.nonce='
+                                    ';a.src=' / cdn - cgi / challenge - platform / scripts / jsd / main.js ';document.getElementsByTagName('
+                                    head ')[0].appendChild(a);";b.getElementsByTagName('
+                                    head ')[0].appendChild(d)}}if(document.body){var a=document.createElement('
+                                    iframe ');a.height=1;a.width=1;a.style.position='
+                                    absolute ';a.style.top=0;a.style.left=0;a.style.border='
+                                    none ';a.style.visibility='
+                                    hidden ';document.body.appendChild(a);if('
+                                    loading '!==document.readyState)c();else if(window.addEventListener)document.addEventListener('
+                                    DOMContentLoaded ',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'
+                                    loading '!==document.readyState&&(document.onreadystatechange=e,c())}}}})();
+    </script>
