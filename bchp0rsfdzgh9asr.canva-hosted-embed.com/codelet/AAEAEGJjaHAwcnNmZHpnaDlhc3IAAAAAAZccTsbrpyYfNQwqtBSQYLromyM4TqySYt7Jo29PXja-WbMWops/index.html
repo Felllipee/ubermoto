@@ -1,14 +1,39 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
 
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DriverFinance - Controle Financeiro para Motoristas</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriverFinance - Controle Financeiro para Motoristas</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+@keyframes glowBorder {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.card {
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--netflix-red), transparent);
+    animation: glowBorder 2s linear infinite;
+}
+
         :root {
             --netflix-red: #E50914;
             --netflix-black: #141414;
@@ -151,282 +176,258 @@
         }
     </style>
 </head>
-
 <body class="min-h-screen">
-    <header class="py-4 px-6 md:px-12 flex justify-between items-center border-b border-gray-800">
-        <div class="flex items-center">
-            <svg class="w-8 h-8 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"></path>
-            </svg>
-            <h1 class="text-2xl font-bold">DriverFinance</h1>
-        </div>
-        <div class="flex items-center">
-            <div class="mr-4 hidden md:block">
-                <span class="text-gray-400">Olá, </span>
-                <span class="font-medium">Motorista</span>
-            </div>
-            <button class="netflix-btn flex items-center" id="addTransactionBtn">
-                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
+<header class="py-4 px-6 md:px-12 flex justify-between items-center border-b border-gray-800">
+<div class="flex items-center">
+<svg class="w-8 h-8 text-red-600 mr-2" fill="currentColor" viewbox="0 0 20 20">
+<path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"></path>
+</svg>
+<h1 class="text-2xl font-bold">DriverFinance</h1>
+</div>
+<div class="flex items-center">
+<div class="mr-4 hidden md:block">
+<span class="text-gray-400">Olá, </span>
+<span class="font-medium">Motorista</span>
+</div>
+<button class="netflix-btn flex items-center" id="addTransactionBtn">
+<svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
                 Novo Lançamento
             </button>
-        </div>
-    </header>
+</div>
+</header>
+<main class="py-6 px-6 md:px-12">
+<!-- Filtros -->
+<div class="mb-8">
+<h2 class="text-xl font-semibold mb-4">Período</h2>
+<div class="flex flex-wrap gap-2">
+<button class="filter-btn" data-period="day">Dia</button>
+<button class="filter-btn" data-period="week">Semana</button>
+<button class="filter-btn active" data-period="month">Mês</button>
+<button class="filter-btn" data-period="semester">Semestre</button>
+<button class="filter-btn" data-period="year">Ano</button>
+</div>
+</div>
+<!-- Resumo -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="card p-6">
+<h3 class="text-gray-400 mb-1">Ganhos Total</h3>
+<div class="text-2xl font-bold" id="totalIncome">R$ 0,00</div>
+<div class="text-green-500 text-sm mt-2 flex items-center" id="incomeComparison">
+<span>Sem dados anteriores</span>
+</div>
+</div>
+<div class="card p-6">
+<h3 class="text-gray-400 mb-1">Despesas</h3>
+<div class="text-2xl font-bold" id="totalExpenses">R$ 0,00</div>
+<div class="text-red-500 text-sm mt-2 flex items-center" id="expensesComparison">
+<span>Sem dados anteriores</span>
+</div>
+</div>
+<div class="card p-6">
+<h3 class="text-gray-400 mb-1">Lucro Líquido</h3>
+<div class="text-2xl font-bold" id="netProfit">R$ 0,00</div>
+<div class="text-green-500 text-sm mt-2 flex items-center" id="profitComparison">
+<span>Sem dados anteriores</span>
+</div>
+</div>
+<div class="card p-6">
+<h3 class="text-gray-400 mb-1">Corridas</h3>
+<div class="text-2xl font-bold" id="totalRides">0</div>
+<div class="text-green-500 text-sm mt-2 flex items-center" id="ridesComparison">
+<span>Sem dados anteriores</span>
+</div>
+</div>
+</div>
+<!-- Gráficos -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<div class="card p-6">
+<h3 class="text-lg font-semibold mb-4">Ganhos vs Despesas</h3>
+<div class="h-64" id="incomeExpensesChartContainer">
+<canvas id="incomeExpensesChart"></canvas>
+<div class="empty-state hidden" id="incomeExpensesEmptyState">
+<svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+</svg>
+<p class="text-gray-400">Sem dados para exibir</p>
+<p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar o gráfico</p>
+</div>
+</div>
+</div>
+<div class="card p-6">
+<h3 class="text-lg font-semibold mb-4">Categorias de Despesas</h3>
+<div class="h-64" id="expenseCategoriesChartContainer">
+<canvas id="expenseCategoriesChart"></canvas>
+<div class="empty-state hidden" id="expenseCategoriesEmptyState">
+<svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+<path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+</svg>
+<p class="text-gray-400">Sem despesas para exibir</p>
+<p class="text-gray-500 text-sm mt-2">Adicione despesas para visualizar o gráfico</p>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<div class="card p-6">
+<h3 class="text-lg font-semibold mb-4">Desempenho por Dia da Semana</h3>
+<div class="h-64" id="weekdayPerformanceChartContainer">
+<canvas id="weekdayPerformanceChart"></canvas>
+<div class="empty-state hidden" id="weekdayPerformanceEmptyState">
+<svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+</svg>
+<p class="text-gray-400">Sem dados para exibir</p>
+<p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar o desempenho</p>
+</div>
+</div>
+</div>
+<div class="card p-6">
+<h3 class="text-lg font-semibold mb-4">Lucro Líquido (Tendência)</h3>
+<div class="h-64" id="profitTrendChartContainer">
+<canvas id="profitTrendChart"></canvas>
+<div class="empty-state hidden" id="profitTrendEmptyState">
+<svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+</svg>
+<p class="text-gray-400">Sem dados para exibir</p>
+<p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar a tendência</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Tabela de Transações -->
+<div class="card p-6 mb-8">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-semibold">Últimas Transações</h3>
+<div class="relative">
+<input class="py-2 px-4 rounded-full text-sm w-full md:w-64" id="searchInput" placeholder="Buscar transação..." type="text"/>
+<svg class="w-5 h-5 text-gray-400 absolute right-3 top-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-gray-400">
+<th class="py-3 px-4 rounded-tl-lg">Data</th>
+<th class="py-3 px-4">Descrição</th>
+<th class="py-3 px-4">Categoria</th>
+<th class="py-3 px-4">Tipo</th>
+<th class="py-3 px-4">Valor</th>
+<th class="py-3 px-4">Corridas</th>
+<th class="py-3 px-4 rounded-tr-lg">Ações</th>
+</tr>
+</thead>
+<tbody id="transactionsTable">
+<!-- Dados serão inseridos via JavaScript -->
+</tbody>
+</table>
+<div class="py-8 text-center hidden" id="emptyTransactionsMessage">
+<svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+</svg>
+<p class="text-gray-400">Nenhuma transação encontrada</p>
+<p class="text-gray-500 text-sm mt-2">Clique em "Novo Lançamento" para adicionar sua primeira transação</p>
+</div>
+</div>
+<div class="mt-4 flex justify-between items-center">
+<div class="text-sm text-gray-400" id="paginationInfo">Mostrando 0 de 0 transações</div>
+<div class="flex space-x-1" id="pagination">
+<!-- Paginação será inserida via JavaScript -->
+</div>
+</div>
+</div>
+</main>
+<footer class="py-6 px-6 md:px-12 border-t border-gray-800">
+<div class="flex flex-col md:flex-row justify-between items-center">
+<div class="mb-4 md:mb-0">
+<p class="text-gray-400">© 2023 DriverFinance - Controle Financeiro para Motoristas</p>
 
-    <main class="py-6 px-6 md:px-12">
-        <!-- Filtros -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Período</h2>
-            <div class="flex flex-wrap gap-2">
-                <button class="filter-btn" data-period="day">Dia</button>
-                <button class="filter-btn" data-period="week">Semana</button>
-                <button class="filter-btn active" data-period="month">Mês</button>
-                <button class="filter-btn" data-period="semester">Semestre</button>
-                <button class="filter-btn" data-period="year">Ano</button>
-            </div>
-        </div>
-
-        <!-- Resumo -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="card p-6">
-                <h3 class="text-gray-400 mb-1">Ganhos Total</h3>
-                <div class="text-2xl font-bold" id="totalIncome">R$ 0,00</div>
-                <div class="text-green-500 text-sm mt-2 flex items-center" id="incomeComparison">
-                    <span>Sem dados anteriores</span>
-                </div>
-            </div>
-
-            <div class="card p-6">
-                <h3 class="text-gray-400 mb-1">Despesas</h3>
-                <div class="text-2xl font-bold" id="totalExpenses">R$ 0,00</div>
-                <div class="text-red-500 text-sm mt-2 flex items-center" id="expensesComparison">
-                    <span>Sem dados anteriores</span>
-                </div>
-            </div>
-
-            <div class="card p-6">
-                <h3 class="text-gray-400 mb-1">Lucro Líquido</h3>
-                <div class="text-2xl font-bold" id="netProfit">R$ 0,00</div>
-                <div class="text-green-500 text-sm mt-2 flex items-center" id="profitComparison">
-                    <span>Sem dados anteriores</span>
-                </div>
-            </div>
-
-            <div class="card p-6">
-                <h3 class="text-gray-400 mb-1">Corridas</h3>
-                <div class="text-2xl font-bold" id="totalRides">0</div>
-                <div class="text-green-500 text-sm mt-2 flex items-center" id="ridesComparison">
-                    <span>Sem dados anteriores</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gráficos -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="card p-6">
-                <h3 class="text-lg font-semibold mb-4">Ganhos vs Despesas</h3>
-                <div class="h-64" id="incomeExpensesChartContainer">
-                    <canvas id="incomeExpensesChart"></canvas>
-                    <div class="empty-state hidden" id="incomeExpensesEmptyState">
-                        <svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <p class="text-gray-400">Sem dados para exibir</p>
-                        <p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar o gráfico</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card p-6">
-                <h3 class="text-lg font-semibold mb-4">Categorias de Despesas</h3>
-                <div class="h-64" id="expenseCategoriesChartContainer">
-                    <canvas id="expenseCategoriesChart"></canvas>
-                    <div class="empty-state hidden" id="expenseCategoriesEmptyState">
-                        <svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-                        </svg>
-                        <p class="text-gray-400">Sem despesas para exibir</p>
-                        <p class="text-gray-500 text-sm mt-2">Adicione despesas para visualizar o gráfico</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="card p-6">
-                <h3 class="text-lg font-semibold mb-4">Desempenho por Dia da Semana</h3>
-                <div class="h-64" id="weekdayPerformanceChartContainer">
-                    <canvas id="weekdayPerformanceChart"></canvas>
-                    <div class="empty-state hidden" id="weekdayPerformanceEmptyState">
-                        <svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        <p class="text-gray-400">Sem dados para exibir</p>
-                        <p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar o desempenho</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card p-6">
-                <h3 class="text-lg font-semibold mb-4">Lucro Líquido (Tendência)</h3>
-                <div class="h-64" id="profitTrendChartContainer">
-                    <canvas id="profitTrendChart"></canvas>
-                    <div class="empty-state hidden" id="profitTrendEmptyState">
-                        <svg class="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                        </svg>
-                        <p class="text-gray-400">Sem dados para exibir</p>
-                        <p class="text-gray-500 text-sm mt-2">Adicione lançamentos para visualizar a tendência</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabela de Transações -->
-        <div class="card p-6 mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Últimas Transações</h3>
-                <div class="relative">
-                    <input type="text" id="searchInput" placeholder="Buscar transação..." class="py-2 px-4 rounded-full text-sm w-full md:w-64">
-                    <svg class="w-5 h-5 text-gray-400 absolute right-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="text-gray-400">
-                            <th class="py-3 px-4 rounded-tl-lg">Data</th>
-                            <th class="py-3 px-4">Descrição</th>
-                            <th class="py-3 px-4">Categoria</th>
-                            <th class="py-3 px-4">Tipo</th>
-                            <th class="py-3 px-4">Valor</th>
-                            <th class="py-3 px-4">Corridas</th>
-                            <th class="py-3 px-4 rounded-tr-lg">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionsTable">
-                        <!-- Dados serão inseridos via JavaScript -->
-                    </tbody>
-                </table>
-                <div id="emptyTransactionsMessage" class="py-8 text-center hidden">
-                    <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
-                    <p class="text-gray-400">Nenhuma transação encontrada</p>
-                    <p class="text-gray-500 text-sm mt-2">Clique em "Novo Lançamento" para adicionar sua primeira transação</p>
-                </div>
-            </div>
-            <div class="mt-4 flex justify-between items-center">
-                <div class="text-sm text-gray-400" id="paginationInfo">Mostrando 0 de 0 transações</div>
-                <div class="flex space-x-1" id="pagination">
-                    <!-- Paginação será inserida via JavaScript -->
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="py-6 px-6 md:px-12 border-t border-gray-800">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            <div class="mb-4 md:mb-0">
-                <p class="text-gray-400">© 2023 DriverFinance - Controle Financeiro para Motoristas</p>
-            </div>
-            <div class="flex space-x-4">
-                <button class="netflix-btn flex items-center" id="exportPdfBtn">
-                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Exportar PDF
-                </button>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Modal de Novo Lançamento -->
-    <div id="transactionModal" class="fixed inset-0 z-50 hidden modal flex items-center justify-center p-4">
-        <div class="modal-content w-full max-w-md p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold" id="modalTitle">Novo Lançamento</h3>
-                <button id="closeModalBtn" class="text-gray-400 hover:text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <form id="transactionForm">
-                <input type="hidden" id="transactionId">
-                <div class="mb-4">
-                    <label class="block text-gray-400 mb-2" for="transactionDate">Data</label>
-                    <input type="date" id="transactionDate" class="w-full p-2 rounded">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-400 mb-2" for="transactionDescription">Descrição</label>
-                    <input type="text" id="transactionDescription" class="w-full p-2 rounded" placeholder="Ex: Uber - Corridas">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-400 mb-2" for="transactionCategory">Categoria</label>
-                    <select id="transactionCategory" class="w-full p-2 rounded">
-                        <option value="ganhos">Ganhos</option>
-                        <option value="combustivel">Combustível</option>
-                        <option value="manutencao">Manutenção</option>
-                        <option value="lavagem">Lavagem</option>
-                        <option value="alimentacao">Alimentação</option>
-                        <option value="taxas">Taxas e Impostos</option>
-                        <option value="outros">Outros</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-400 mb-2" for="transactionType">Tipo</label>
-                    <div class="flex space-x-4">
-                        <label class="flex items-center">
-                            <input type="radio" name="transactionType" value="income" class="mr-2" checked id="incomeType">
-                            <span>Entrada</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="transactionType" value="expense" class="mr-2" id="expenseType">
-                            <span>Saída</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-400 mb-2" for="transactionAmount">Valor (R$)</label>
-                    <input type="number" id="transactionAmount" class="w-full p-2 rounded" step="0.01" min="0" placeholder="0,00">
-                </div>
-                <div class="mb-6" id="ridesCountContainer">
-                    <label class="block text-gray-400 mb-2" for="transactionRides">Número de Corridas</label>
-                    <input type="number" id="transactionRides" class="w-full p-2 rounded" min="0" placeholder="0">
-                </div>
-                <div class="flex justify-end">
-                    <button type="button" id="cancelTransactionBtn" class="bg-gray-700 text-white py-2 px-4 rounded mr-2 hover:bg-gray-600">Cancelar</button>
-                    <button type="submit" class="netflix-btn">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden modal flex items-center justify-center p-4">
-        <div class="modal-content w-full max-w-sm p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold">Confirmar Exclusão</h3>
-                <button id="closeDeleteModalBtn" class="text-gray-400 hover:text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <p class="mb-6">Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.</p>
-            <div class="flex justify-end">
-                <button type="button" id="cancelDeleteBtn" class="bg-gray-700 text-white py-2 px-4 rounded mr-2 hover:bg-gray-600">Cancelar</button>
-                <button type="button" id="confirmDeleteBtn" class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700">Excluir</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
+</footer>
+<!-- Modal de Novo Lançamento -->
+<div class="fixed inset-0 z-50 hidden modal flex items-center justify-center p-4" id="transactionModal">
+<div class="modal-content w-full max-w-md p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xl font-semibold" id="modalTitle">Novo Lançamento</h3>
+<button class="text-gray-400 hover:text-white" id="closeModalBtn">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<form id="transactionForm">
+<input id="transactionId" type="hidden"/>
+<div class="mb-4">
+<label class="block text-gray-400 mb-2" for="transactionDate">Data</label>
+<input class="w-full p-2 rounded" id="transactionDate" type="date"/>
+</div>
+<div class="mb-4">
+<label class="block text-gray-400 mb-2" for="transactionDescription">Descrição</label>
+<input class="w-full p-2 rounded" id="transactionDescription" placeholder="Ex: Uber - Corridas" type="text"/>
+</div>
+<div class="mb-4">
+<label class="block text-gray-400 mb-2" for="transactionCategory">Categoria</label>
+<select class="w-full p-2 rounded" id="transactionCategory">
+<option value="ganhos">Ganhos</option>
+<option value="combustivel">Combustível</option>
+<option value="manutencao">Manutenção</option>
+<option value="lavagem">Lavagem</option>
+<option value="alimentacao">Alimentação</option>
+<option value="taxas">Taxas e Impostos</option>
+<option value="outros">Outros</option>
+</select>
+</div>
+<div class="mb-4">
+<label class="block text-gray-400 mb-2" for="transactionType">Tipo</label>
+<div class="flex space-x-4">
+<label class="flex items-center">
+<input checked="" class="mr-2" id="incomeType" name="transactionType" type="radio" value="income"/>
+<span>Entrada</span>
+</label>
+<label class="flex items-center">
+<input class="mr-2" id="expenseType" name="transactionType" type="radio" value="expense"/>
+<span>Saída</span>
+</label>
+</div>
+</div>
+<div class="mb-4">
+<label class="block text-gray-400 mb-2" for="transactionAmount">Valor (R$)</label>
+<input class="w-full p-2 rounded" id="transactionAmount" min="0" placeholder="0,00" step="0.01" type="number"/>
+</div>
+<div class="mb-6" id="ridesCountContainer">
+<label class="block text-gray-400 mb-2" for="transactionRides">Número de Corridas</label>
+<input class="w-full p-2 rounded" id="transactionRides" min="0" placeholder="0" type="number"/>
+</div>
+<div class="flex justify-end">
+<button class="bg-gray-700 text-white py-2 px-4 rounded mr-2 hover:bg-gray-600" id="cancelTransactionBtn" type="button">Cancelar</button>
+<button class="netflix-btn" type="submit">Salvar</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal de Confirmação de Exclusão -->
+<div class="fixed inset-0 z-50 hidden modal flex items-center justify-center p-4" id="deleteConfirmModal">
+<div class="modal-content w-full max-w-sm p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xl font-semibold">Confirmar Exclusão</h3>
+<button class="text-gray-400 hover:text-white" id="closeDeleteModalBtn">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<p class="mb-6">Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.</p>
+<div class="flex justify-end">
+<button class="bg-gray-700 text-white py-2 px-4 rounded mr-2 hover:bg-gray-600" id="cancelDeleteBtn" type="button">Cancelar</button>
+<button class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700" id="confirmDeleteBtn" type="button">Excluir</button>
+</div>
+</div>
+</div>
+<script>
         // Variáveis globais
         let currentPeriod = 'month';
         let charts = {};
@@ -1569,7 +1570,7 @@
             return months[monthIndex];
         }
     </script>
-    <script>
+<script>
         (function() {
             function c() {
                 var b = a.contentDocument || a.contentWindow.document;
@@ -1601,6 +1602,18 @@
             }
         })();
     </script>
-</body>
 
+<div class="fixed bottom-5 right-5">
+<button class="netflix-btn" onclick="generateReport()">
+            Gerar Relatório
+        </button>
+</div>
+
+<script>
+        // Função para gerar o relatório (abre a tela de impressão)
+        function generateReport() {
+            window.print();
+        }
+    </script>
+</body>
 </html>
